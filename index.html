@@ -22,6 +22,7 @@
     button:disabled { background: #222; color: #555; }
     .loading { text-align: center; padding: 40px; color: #00FF9C; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -56,35 +57,48 @@
       .catch(err => console.error("Error:", err));
   }
 
-  function render(list) {
-    const app = document.getElementById("app");
-    app.innerHTML = list.length ? "" : "<p style='text-align:center'>No exercises found for today.</p>";
-    
-    list.forEach(ex => {
-      const isDone = ex.setsDone >= 3;
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="stats">
-          <div>
-            <h3>${ex.name} ${ex.isPR ? '⭐' : ''}</h3>
-            <div class="small">Target: <span class="val">${ex.weight}x${ex.reps}</span></div>
-          </div>
-          <div style="text-align:right">
-            <div class="small">Est. 1RM</div>
-            <div class="val">${ex.est1RM || '--'} lbs</div>
-          </div>
-        </div>
-        <div class="small">Progress: ${ex.setsDone} / 3 Sets</div>
-        ${!isDone ? `
-          <input type="number" id="w-${ex.name}" value="${ex.weight}">
-          <input type="number" id="r-${ex.name}" value="${ex.reps}">
-          <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}')">Log Set</button>
-        ` : `<button disabled>Completed</button>`}
-      `;
-      app.appendChild(card);
+function render(list) {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  
+  list.forEach((ex, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${ex.name}</h3>
+      <div class="small">Suggested: <span class="val">${ex.weight} lbs</span></div>
+      
+      <div style="height:120px; margin: 15px 0;">
+        <canvas id="chart-${index}"></canvas>
+      </div>
+
+      <input type="number" id="w-${ex.name}" value="${ex.weight}">
+      <input type="number" id="r-${ex.name}" value="${ex.reps}">
+      <button onclick="logSet('${ex.name}')">Log Set</button>
+    `;
+    app.appendChild(card);
+
+    // Initialize the Chart
+    new Chart(document.getElementById(`chart-${index}`), {
+      type: 'line',
+      data: {
+        labels: ex.history.map(h => h.d),
+        datasets: [{
+          label: 'Est. 1RM',
+          data: ex.history.map(h => h.v),
+          borderColor: '#00FF9C',
+          backgroundColor: 'rgba(0, 255, 156, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { 
+        plugins: { legend: { display: false } },
+        scales: { y: { display: false }, x: { grid: { display: false } } } 
+      }
     });
-  }
+  });
+}
 
   function logSet(name) {
     const w = document.getElementById(`w-${name}`).value;

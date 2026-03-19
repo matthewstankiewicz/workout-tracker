@@ -66,40 +66,26 @@ function render(list) {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <h3>${ex.name}</h3>
-      <div class="small">Suggested: <span class="val">${ex.weight} lbs</span></div>
-      
-      <canvas id="chart-${index}" style="max-height: 100px; margin: 10px 0;"></canvas>
-
-      <div class="small" style="margin-bottom: 10px;">
-        Progress: <span class="val">${ex.setsDone} / 3 Sets</span>
+      <div style="display: flex; justify-content: space-between;">
+        <h3 style="margin:0">${ex.name}</h3>
+        <div style="text-align:right">
+          <div class="small">Goal Range</div>
+          <div class="val">${ex.targetReps} - ${ex.repMax} Reps</div>
+        </div>
       </div>
+      
+      <div class="small" style="margin-top:10px">Suggested: <span class="val">${ex.weight} lbs</span></div>
+      <div class="small">Progress: <span class="val">${ex.setsDone} / 3 Sets</span></div>
 
       ${!isDone ? `
-        <input type="number" id="w-${ex.name}" value="${ex.weight}">
-        <input type="number" id="r-${ex.name}" value="${ex.reps}">
-        <button onclick="logSet('${ex.name}')">Log Set</button>
-      ` : `<button disabled style="background:#222; color:#00FF9C">✓ Daily Goal Met</button>`}
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <input type="number" id="w-${ex.name}" value="${ex.weight}" style="flex:1">
+          <input type="number" id="r-${ex.name}" value="${ex.reps}" style="flex:1">
+        </div>
+        <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}')">Log Set</button>
+      ` : `<button disabled style="background:#222; color:#00FF9C; margin-top:10px;">✓ Done</button>`}
     `;
     app.appendChild(card);
-
-    // Initialize the Chart (Same code as before)
-    new Chart(document.getElementById(`chart-${index}`), {
-      type: 'line',
-      data: {
-        labels: ex.history.map(h => h.d),
-        datasets: [{
-          data: ex.history.map(h => h.v),
-          borderColor: '#00FF9C',
-          tension: 0.3,
-          pointRadius: 0
-        }]
-      },
-      options: { 
-        plugins: { legend: { display: false } },
-        scales: { y: { display: false }, x: { display: false } } 
-      }
-    });
   });
 }
   function logSet(name) {

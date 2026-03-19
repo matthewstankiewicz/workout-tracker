@@ -101,18 +101,36 @@ function render(list) {
         data: {
           labels: ex.history.map(h => h.d),
           datasets: [{
-            data: ex.history.map(h => h.v),
+            label: 'Reps',
+            data: ex.history.map(h => h.v), // This is the Weight/1RM
+            reps: ex.history.map(h => h.r || ""), // We'll pass reps here
             borderColor: '#00FF9C',
             backgroundColor: 'rgba(0, 255, 156, 0.1)',
             fill: true,
             tension: 0.4,
-            pointRadius: 2
+            pointRadius: 4, // Bigger points to show they are interactable
+            pointBackgroundColor: '#00FF9C'
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: function(context) {
+                  // This shows "155 lbs (10 reps)" when you tap a point
+                  let label = context.raw + ' lbs';
+                  if (ex.history[context.dataIndex].r) {
+                    label += ' (' + ex.history[context.dataIndex].r + ' reps)';
+                  }
+                  return label;
+                }
+              }
+            }
+          },
           scales: {
             x: { display: false },
             y: { display: false }

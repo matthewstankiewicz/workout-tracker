@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StrongTracker</title>
+  <style>
+    body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
+    .header { padding: 20px; text-align: center; font-size: 24px; color: #00FF9C; border-bottom: 1px solid #222; position: sticky; top: 0; background: #000; z-index: 10; }
+    .container { padding: 15px; max-width: 500px; margin: auto; }
+    .card { background: #111; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #222; }
+    .card h3 { margin: 0 0 5px 0; color: #fff; }
+    .stats { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .small { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .val { color: #00FF9C; font-weight: bold; }
+    input { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+    button { width: 100%; padding: 14px; background: #00FF9C; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    button:disabled { background: #222; color: #555; }
+    .loading { text-align: center; padding: 40px; color: #00FF9C; }
+  </style>
+</head>
+<body>
+
+<div class="header" id="dayTitle">Loading...</div>
+<div class="container" id="app">
+  <div class="loading">Fetching your workout...</div>
+</div>
+
+<script>
+  // 1. Setup Security & URL
+  let userKey = localStorage.getItem("workout_key");
+  if (!userKey) {
+      userKey = prompt("Enter your Secret Key:");
+      if (userKey) localStorage.setItem("workout_key", userKey);
+  }
+  
+  // REPLACE with your actual Google Exec URL
+  const baseAddr = "https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec";
+  const scriptURL = `${baseAddr}?key=${userKey}`;
+
+  function loadData() {
+    fetch(scriptURL, { redirect: "follow" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+           document.getElementById("app").innerHTML = `<button onclick="localStorage.removeItem('workout_key'); location.reload();">Invalid Key: Click to Reset</button>`;
+           return;
+        }
+        document.getElementById("dayTitle").innerText = "Workout " + data.day;
+        render(data.next);
+      })
+      .catch(err => console.error("Error:", err));
+  }
+
+  function render(list) {
+    const app = document.getElementById("app");
+    app.innerHTML = list.length ? "" : "<p style='text-align:center'>No exercises found for today.</p>";
+    
+    list.forEach(ex => {
+      const isDone = ex.setsDone >= 3;
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="stats">
+          <div>
+            <h3>${ex.name} ${ex.isPR ? '⭐' : ''}</h3>
+            <div class="small">Target: <span class="val">${ex.weight}x${ex.reps}</span></div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Est. 1RM</div>
+            <div class="val">${ex.est1RM || '--'} lbs</div>
+          </div>
+        </div>
+        <div class="small">Progress: ${ex.setsDone} / 3 Sets</div>
+        ${!isDone ? `
+          <input type="number" id="w-${ex.name}" value="${ex.weight}">
+          <input type="number" id="r-${ex.name}" value="${ex.reps}">
+          <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}')">Log Set</button>
+        ` : `<button disabled>Completed</button>`}
+      `;
+      app.appendChild(card);
+    });
+  }
+
+  function logSet(name) {
+    const w = document.getElementById(`w-${name}`).value;
+    const r = document.getElementById(`r-${name}`).value;
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({ exercise: name, weight: w, reps: r, sets: 1 }),
+      redirect: "follow"
+    }).then(() => loadData());
+  }
+
+  loadData();
+</script>
+</body>
+</html>

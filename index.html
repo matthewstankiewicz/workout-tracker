@@ -65,6 +65,8 @@ function render(list) {
     const isDone = ex.setsDone >= 3;
     const card = document.createElement("div");
     card.className = "card";
+    
+    // 1. Create the Card Structure
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between;">
         <h3 style="margin:0">${ex.name}</h3>
@@ -74,7 +76,11 @@ function render(list) {
         </div>
       </div>
       
-      <div class="small" style="margin-top:10px">Suggested: <span class="val">${ex.weight} lbs</span></div>
+      <div style="height: 80px; margin: 10px 0;">
+        <canvas id="chart-${index}"></canvas>
+      </div>
+      
+      <div class="small">Suggested: <span class="val">${ex.weight} lbs</span></div>
       <div class="small">Progress: <span class="val">${ex.setsDone} / 3 Sets</span></div>
 
       ${!isDone ? `
@@ -86,6 +92,34 @@ function render(list) {
       ` : `<button disabled style="background:#222; color:#00FF9C; margin-top:10px;">✓ Done</button>`}
     `;
     app.appendChild(card);
+
+    // 2. Initialize the Chart for this specific card
+    const ctx = document.getElementById(`chart-${index}`).getContext('2d');
+    if (ex.history && ex.history.length > 0) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ex.history.map(h => h.d),
+          datasets: [{
+            data: ex.history.map(h => h.v),
+            borderColor: '#00FF9C',
+            backgroundColor: 'rgba(0, 255, 156, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }
   });
 }
   function logSet(name) {

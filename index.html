@@ -62,44 +62,46 @@ function render(list) {
   app.innerHTML = "";
   
   list.forEach((ex, index) => {
+    const isDone = ex.setsDone >= 3;
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <h3>${ex.name}</h3>
       <div class="small">Suggested: <span class="val">${ex.weight} lbs</span></div>
       
-      <div style="height:120px; margin: 15px 0;">
-        <canvas id="chart-${index}"></canvas>
+      <canvas id="chart-${index}" style="max-height: 100px; margin: 10px 0;"></canvas>
+
+      <div class="small" style="margin-bottom: 10px;">
+        Progress: <span class="val">${ex.setsDone} / 3 Sets</span>
       </div>
 
-      <input type="number" id="w-${ex.name}" value="${ex.weight}">
-      <input type="number" id="r-${ex.name}" value="${ex.reps}">
-      <button onclick="logSet('${ex.name}')">Log Set</button>
+      ${!isDone ? `
+        <input type="number" id="w-${ex.name}" value="${ex.weight}">
+        <input type="number" id="r-${ex.name}" value="${ex.reps}">
+        <button onclick="logSet('${ex.name}')">Log Set</button>
+      ` : `<button disabled style="background:#222; color:#00FF9C">✓ Daily Goal Met</button>`}
     `;
     app.appendChild(card);
 
-    // Initialize the Chart
+    // Initialize the Chart (Same code as before)
     new Chart(document.getElementById(`chart-${index}`), {
       type: 'line',
       data: {
         labels: ex.history.map(h => h.d),
         datasets: [{
-          label: 'Est. 1RM',
           data: ex.history.map(h => h.v),
           borderColor: '#00FF9C',
-          backgroundColor: 'rgba(0, 255, 156, 0.1)',
-          fill: true,
-          tension: 0.3
+          tension: 0.3,
+          pointRadius: 0
         }]
       },
       options: { 
         plugins: { legend: { display: false } },
-        scales: { y: { display: false }, x: { grid: { display: false } } } 
+        scales: { y: { display: false }, x: { display: false } } 
       }
     });
   });
 }
-
   function logSet(name) {
     const w = document.getElementById(`w-${name}`).value;
     const r = document.getElementById(`r-${name}`).value;

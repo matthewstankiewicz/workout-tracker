@@ -107,7 +107,7 @@
     document.getElementById("totalDone").innerText = `${completed} / ${list.length}`;
   }
 
-  function buildChart(id, history) {
+function buildChart(id, history) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
     new Chart(ctx, {
@@ -125,7 +125,21 @@
       options: {
         responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: (ctx) => `Vol: ${ctx.raw.toLocaleString()} lbs` } } },
+        plugins: { 
+          legend: { display: false }, 
+          tooltip: { 
+            enabled: true,
+            backgroundColor: 'rgba(34, 34, 34, 0.9)', // Solid dark grey
+            titleFont: { size: 16, weight: 'bold' },    // Larger Date text
+            bodyFont: { size: 18, weight: 'bold' },     // Larger Volume text
+            padding: 12,                                // More room inside the box
+            cornerRadius: 8,
+            displayColors: false,                       // Removes the tiny color square
+            callbacks: { 
+              label: (ctx) => `${ctx.raw.toLocaleString()} lbs` 
+            } 
+          } 
+        },
         scales: { x: { display: false }, y: { display: false } }
       }
     });

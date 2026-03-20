@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,54 +7,55 @@
   <meta name="theme-color" content="#00FF9C">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <title>StrongTracker</title>
+  <title>StrongTracker Pro</title>
   <style>
-    body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
-    .header { padding: 20px; text-align: center; font-size: 24px; color: #00FF9C; border-bottom: 1px solid #222; position: sticky; top: 0; background: #000; z-index: 10; }
+    body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding-bottom: 80px; }
+    .header { padding: 20px; text-align: center; font-size: 22px; color: #00FF9C; border-bottom: 1px solid #222; position: sticky; top: 0; background: rgba(0,0,0,0.9); z-index: 100; backdrop-filter: blur(10px); }
     .container { padding: 15px; max-width: 500px; margin: auto; }
-    .card { background: #111; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #222; }
-    .card h3 { margin: 0 0 5px 0; color: #fff; }
-    .stats { display: flex; justify-content: space-between; margin-bottom: 15px; }
-    .small { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* Timer Overlay */
+    #timer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #00FF9C; color: #000; text-align: center; padding: 12px; font-weight: bold; font-size: 18px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+    .card { background: #111; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #222; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .card h3 { margin: 0; font-size: 18px; color: #fff; flex: 1; }
+    .small { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
     .val { color: #00FF9C; font-weight: bold; }
-    input { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-    button { width: 100%; padding: 14px; background: #00FF9C; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
-    button:disabled { background: #222; color: #555; }
-    .loading { text-align: center; padding: 40px; color: #00FF9C; }
-    /* Rest Timer Bar */
-#timer-overlay {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  background: #ff0063; 
-  color: #000;
-  text-align: center; 
-  padding: 12px;
-  font-weight: bold; 
-  font-size: 18px;
-  z-index: 1000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;
-}
+    
+    .chart-container { height: 100px; margin: 15px 0; position: relative; }
+    
+    .input-group { display: flex; gap: 10px; margin-top: 15px; }
+    input { flex: 1; padding: 14px; background: #222; border: 1px solid #333; color: #fff; border-radius: 10px; font-size: 18px; text-align: center; outline: none; }
+    input:focus { border-color: #00FF9C; }
+    
+    button { width: 100%; padding: 16px; background: #00FF9C; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 12px; transition: opacity 0.2s; }
+    button:active { opacity: 0.7; }
+    button:disabled { background: #222; color: #555; cursor: not-allowed; }
+    
+    #finish-btn { background: #333; color: #fff; border: 1px solid #444; margin-top: 40px; }
+    .loading { text-align: center; padding: 50px; color: #00FF9C; font-weight: bold; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
 <div id="timer-overlay">RESTING: <span id="timer-count">90</span>s</div>
-<div class="header" id="dayTitle">Loading...</div>
-<div class="container" id="app">
-  <div class="loading">Fetching your workout...</div>
+<div class="header" id="dayTitle">StrongTracker</div>
+
+<div class="container">
+  <div id="app">
+    <div class="loading">Loading Workout...</div>
+  </div>
+  <button id="finish-btn" onclick="finishWorkout()">Finish Workout & Switch Day</button>
 </div>
 
 <script>
-  // 1. Setup Security & URL
   let userKey = localStorage.getItem("workout_key");
   if (!userKey) {
-      userKey = prompt("Enter your Secret Key:");
+      userKey = prompt("Enter Secret Key:");
       if (userKey) localStorage.setItem("workout_key", userKey);
   }
-  
-  // REPLACE with your actual Google Exec URL
+
+  // REPLACE THIS with your actual Google Script Web App URL
   const baseAddr = "https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec";
   const scriptURL = `${baseAddr}?key=${userKey}`;
 
@@ -63,130 +64,135 @@
       .then(res => res.json())
       .then(data => {
         if (data.error) {
-           document.getElementById("app").innerHTML = `<button onclick="localStorage.removeItem('workout_key'); location.reload();">Invalid Key: Click to Reset</button>`;
-           return;
+            document.getElementById("app").innerHTML = `<button onclick="localStorage.removeItem('workout_key'); location.reload();">Invalid Key: Tap to Reset</button>`;
+            return;
         }
-        document.getElementById("dayTitle").innerText = "Workout " + data.day;
+        document.getElementById("dayTitle").innerText = "Workout Day " + data.day;
         render(data.next);
       })
       .catch(err => console.error("Error:", err));
   }
 
-function render(list) {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-  
-  list.forEach((ex, index) => {
-    const isDone = ex.setsDone >= 3;
-    const card = document.createElement("div");
-    card.className = "card";
+  function render(list) {
+    const app = document.getElementById("app");
+    app.innerHTML = "";
     
-    // 1. Create the Card Structure
-    card.innerHTML = `
-      <div style="display: flex; justify-content: space-between;">
-        <h3 style="margin:0">${ex.name}</h3>
-        <div style="text-align:right">
-          <div class="small">Goal Range</div>
-          <div class="val">${ex.targetReps} - ${ex.repMax} Reps</div>
+    list.forEach((ex, index) => {
+      const isDone = ex.setsDone >= 3;
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <h3>${ex.name}</h3>
+          <div style="text-align: right;">
+            <div class="small">Goal Range</div>
+            <div class="val" style="font-size: 14px;">${ex.targetReps} - ${ex.repMax} Reps</div>
+          </div>
         </div>
-      </div>
-      
-      <div style="height: 80px; margin: 10px 0;">
-        <canvas id="chart-${index}"></canvas>
-      </div>
-      
-      <div class="small">Suggested: <span class="val">${ex.weight} lbs</span></div>
-      <div class="small">Progress: <span class="val">${ex.setsDone} / 3 Sets</span></div>
 
-      ${!isDone ? `
-        <div style="display:flex; gap:10px; margin-top:10px;">
-          <input type="number" id="w-${ex.name}" value="${ex.weight}" style="flex:1">
-          <input type="number" id="r-${ex.name}" value="${ex.reps}" style="flex:1">
+        <div class="chart-container">
+          <canvas id="chart-${index}"></canvas>
         </div>
-        <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}')">Log Set</button>
-      ` : `<button disabled style="background:#222; color:#00FF9C; margin-top:10px;">✓ Done</button>`}
-    `;
-    app.appendChild(card);
 
-    // 2. Initialize the Chart for this specific card
-    const ctx = document.getElementById(`chart-${index}`).getContext('2d');
-    if (ex.history && ex.history.length > 0) {
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ex.history.map(h => h.d),
-          datasets: [{
-            label: 'Reps',
-            data: ex.history.map(h => h.v), // This is the Weight/1RM
-            reps: ex.history.map(h => h.r || ""), // We'll pass reps here
-            borderColor: '#00FF9C',
-            backgroundColor: 'rgba(0, 255, 156, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4, // Bigger points to show they are interactable
-            pointBackgroundColor: '#00FF9C'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { display: false },
-            tooltip: {
-  enabled: true,
-  callbacks: {
-    label: function(context) {
-      return 'Total Volume: ' + context.raw.toLocaleString() + ' lbs';
-    }
-  }
-}
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <div class="small">Suggested Weight</div>
+            <div class="val">${ex.weight} lbs</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="small">Sets Done</div>
+            <div class="val">${ex.setsDone} / 3</div>
+          </div>
+        </div>
+
+        ${!isDone ? `
+          <div class="input-group">
+            <input type="number" id="w-${ex.name}" value="${ex.weight}" placeholder="Lbs">
+            <input type="number" id="r-${ex.name}" value="${ex.reps}" placeholder="Reps">
+          </div>
+          <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}', this)">Log Set</button>
+        ` : `<button disabled style="margin-top:20px;">✓ Exercise Completed</button>`}
+      `;
+      app.appendChild(card);
+
+      // Initialize Chart
+      if (ex.history && ex.history.length > 0) {
+        new Chart(document.getElementById(`chart-${index}`), {
+          type: 'line',
+          data: {
+            labels: ex.history.map(h => h.d),
+            datasets: [{
+              data: ex.history.map(h => h.v),
+              borderColor: '#00FF9C',
+              backgroundColor: 'rgba(0, 255, 156, 0.1)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#00FF9C'
+            }]
           },
-          scales: {
-            x: { display: false },
-            y: { display: false }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: (ctx) => `Avg Intensity: ${ctx.raw} lbs` }
+              }
+            },
+            scales: { x: { display: false }, y: { display: false } }
           }
-        }
-      });
-    }
-  });
-}
-  function logSet(name) {
-  const w = document.getElementById(`w-${name}`).value;
-  const r = document.getElementById(`r-${name}`).value;
-  const btn = event.target;
-  
-  // 1. UI Feedback: Disable button immediately
-  btn.disabled = true;
-  btn.innerText = "Saving...";
+        });
+      }
+    });
+  }
 
-  // 2. Start the 90s Timer
-  let seconds = 60;
-  const overlay = document.getElementById("timer-overlay");
-  const display = document.getElementById("timer-count");
-  
-  overlay.style.display = "block"; // Show the green bar
-  
-  const interval = setInterval(() => {
-    seconds--;
-    display.innerText = seconds;
+  function logSet(name, btn) {
+    const w = document.getElementById(`w-${name}`).value;
+    const r = document.getElementById(`r-${name}`).value;
     
-    if (seconds <= 0) {
-      clearInterval(interval);
-      overlay.style.display = "none"; // Hide bar when done
-      // Optional: Add a subtle vibrate or sound here
-      alert("Rest over! Get back to it!"); 
-    }
-  }, 1000);
+    btn.disabled = true;
+    btn.innerText = "Saving...";
 
-  // 3. Send data to Google Sheets
-  fetch(scriptURL, {
-    method: "POST",
-    body: JSON.stringify({ exercise: name, weight: w, reps: r, sets: 1 }),
-    redirect: "follow"
-  }).then(() => {
-    loadData(); // Refresh the card (Progress 1/3, etc.)
-  });
-}
+    // Start 90s Timer
+    startTimer(90);
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({ exercise: name, weight: w, reps: r }),
+      redirect: "follow"
+    }).then(() => loadData());
+  }
+
+  function startTimer(seconds) {
+    const overlay = document.getElementById("timer-overlay");
+    const display = document.getElementById("timer-count");
+    overlay.style.display = "block";
+    
+    let timeLeft = seconds;
+    const interval = setInterval(() => {
+      timeLeft--;
+      display.innerText = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        overlay.style.display = "none";
+        alert("Rest Over!");
+      }
+    }, 1000);
+  }
+
+  function finishWorkout() {
+    if (!confirm("Finish today's workout and switch to the next day?")) return;
+    const btn = document.getElementById("finish-btn");
+    btn.disabled = true;
+    btn.innerText = "Switching Days...";
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({ action: "finishWorkout" }),
+      redirect: "follow"
+    }).then(() => location.reload());
+  }
 
   loadData();
 </script>

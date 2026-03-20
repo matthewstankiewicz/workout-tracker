@@ -133,18 +133,13 @@ function render(list) {
           plugins: { 
             legend: { display: false },
             tooltip: {
-              enabled: true,
-              callbacks: {
-                label: function(context) {
-                  // This shows "155 lbs (10 reps)" when you tap a point
-                  let label = context.raw + ' lbs';
-                  if (ex.history[context.dataIndex].r) {
-                    label += ' (' + ex.history[context.dataIndex].r + ' reps)';
-                  }
-                  return label;
-                }
-              }
-            }
+  enabled: true,
+  callbacks: {
+    label: function(context) {
+      return 'Total Volume: ' + context.raw.toLocaleString() + ' lbs';
+    }
+  }
+}
           },
           scales: {
             x: { display: false },

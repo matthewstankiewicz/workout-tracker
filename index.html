@@ -13,9 +13,9 @@
       margin: 0; overflow: hidden; height: 100vh;
     }
     
-    /* Sticky Navigation & High Z-Index for Mobile Tapping */
+    /* Sticky Navigation */
     .top-nav {
-      position: fixed; top: 0; width: 100%; z-index: 3000;
+      position: fixed; top: 0; width: 100%; z-index: 2000;
       background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid #222; padding-top: env(safe-area-inset-top);
     }
@@ -24,23 +24,25 @@
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
     
     .menu-btn { 
-      background: none; border: none; color: #00FF9C; font-size: 28px; 
-      padding: 10px; cursor: pointer; position: relative; z-index: 3001; 
+      background: none; border: none; color: #00FF9C; font-size: 32px; 
+      padding: 5px 10px; cursor: pointer;
     }
 
+    /* Menu positioned globally */
     .menu-content { 
-      display: none; position: absolute; right: 15px; top: 100%; 
+      display: none; position: fixed; right: 15px; top: 110px; 
       background: #1a1a1a; border: 1px solid #333; border-radius: 12px; 
-      z-index: 4000; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+      z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     }
-    .menu-item { padding: 18px; color: #fff; border-bottom: 1px solid #222; font-weight: 500; }
+    .menu-item { padding: 18px; color: #fff; border-bottom: 1px solid #222; font-weight: 500; text-align: center;}
+    .menu-item:last-child { border: none; }
     .menu-item:active { background: #333; }
 
-    /* Carousel - Conservative height to prevent button cutoff */
+    /* Carousel Space */
     .carousel-container {
       display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
       scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-      margin-top: 115px; height: calc(100vh - 115px - 70px); 
+      margin-top: 115px; height: calc(100vh - 115px - 75px); 
     }
     .carousel-container::-webkit-scrollbar { display: none; }
 
@@ -67,7 +69,7 @@
     }
 
     .dots { 
-      display: flex; justify-content: center; gap: 8px; height: 65px; 
+      display: flex; justify-content: center; gap: 8px; height: 75px; 
       padding-top: 15px; background: #000; position: fixed; bottom: 0; width: 100%; 
       padding-bottom: env(safe-area-inset-bottom);
     }
@@ -76,7 +78,7 @@
 
     #timer-overlay { 
       display: none; position: fixed; top: 0; width: 100%; background: #00FF9C; 
-      color: #000; text-align: center; padding: 12px; z-index: 5000; font-weight: bold; 
+      color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; 
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -91,39 +93,44 @@
     <div><div class="small">Session Volume</div><div id="totalVol" class="val" style="font-size: 20px;">0 lbs</div></div>
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="text-align: right;"><div class="small">Progress</div><div id="totalDone" class="val">0 / 0</div></div>
-      <button class="menu-btn" id="menuBtn" onclick="toggleMenu(event)">☰</button>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
     </div>
   </div>
-  <div class="menu-content" id="navMenu">
-    <div class="menu-item" onclick="finishWorkout()">Finish & Switch Day</div>
-    <div class="menu-item" onclick="location.reload()">Refresh Data</div>
-  </div>
+</div>
+
+<div class="menu-content" id="navMenu">
+  <div class="menu-item" onclick="finishWorkout()">Finish & Switch Day</div>
+  <div class="menu-item" onclick="location.reload()">Refresh Data</div>
 </div>
 
 <div class="carousel-container" id="app"></div>
 <div class="dots" id="dots"></div>
 
 <script>
+  // Global Toggle Function - DEFINED FIRST
+  function toggleMenu() {
+    const m = document.getElementById("navMenu");
+    if (m.style.display === "block") {
+      m.style.display = "none";
+    } else {
+      m.style.display = "block";
+    }
+  }
+
+  // Close menu when clicking away
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById("navMenu");
+    const btn = document.querySelector('.menu-btn');
+    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== btn) {
+      menu.style.display = 'none';
+    }
+  });
+
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
 
-  // REPLACE WITH YOUR APPS SCRIPT URL
+  // REPLACE WITH YOUR ACTUAL URL
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
-
-  function toggleMenu(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
-    const m = document.getElementById("navMenu");
-    m.style.display = (m.style.display === "block") ? "none" : "block";
-  }
-
-  // Mobile-friendly menu closing
-  window.addEventListener('touchstart', function(e) {
-    const menu = document.getElementById("navMenu");
-    const btn = document.getElementById("menuBtn");
-    if (menu.style.display === "block" && !menu.contains(e.target) && e.target !== btn) {
-      menu.style.display = "none";
-    }
-  });
 
   function loadData() {
     fetch(scriptURL, { redirect: "follow" })
@@ -132,7 +139,7 @@
         document.getElementById("dayTitle").innerText = data.day || "Workout";
         render(data.next || []);
       })
-      .catch(() => document.getElementById("dayTitle").innerText = "Offline - Check Connection");
+      .catch(() => document.getElementById("dayTitle").innerText = "Connection Error");
   }
 
   function render(list) {

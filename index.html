@@ -16,7 +16,7 @@
     .card h3 { margin: 0; font-size: 18px; color: #fff; }
     .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
     .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
-    canvas { width: 100% !important; height: 120px !important; margin: 15px 0; }
+    canvas { width: 100% !important; height: 120px !important; margin: 15px 0; touch-action: pan-y; } /* Better touch handle */
     .input-row { display: flex; gap: 12px; margin-top: 15px; width: 100%; }
     input { flex: 1; min-width: 0; padding: 14px; background: #222; border: 1px solid #333; color: #fff; border-radius: 10px; font-size: 18px; text-align: center; outline: none; }
     button { width: 100%; padding: 16px; background: #00FF9C; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 12px; color: #000; }
@@ -42,8 +42,7 @@
 <script>
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
-
-  const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
+  const scriptURL = `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?key=${userKey}`;
 
   function loadData() {
     fetch(scriptURL, { redirect: "follow" })
@@ -57,8 +56,7 @@
   function render(list) {
     const app = document.getElementById("app");
     app.innerHTML = "";
-    let sessionVol = 0;
-    let completed = 0;
+    let sessionVol = 0; let completed = 0;
     const todayLabel = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
 
     list.forEach((ex, i) => {
@@ -100,12 +98,28 @@
           borderColor: '#00FF9C', 
           backgroundColor: 'rgba(0, 255, 156, 0.1)',
           fill: true, tension: 0.4, 
-          pointRadius: 5, pointBackgroundColor: '#00FF9C', pointHoverRadius: 8
+          pointRadius: 6,           // Visible points
+          pointBackgroundColor: '#00FF9C',
+          pointHitRadius: 30,       // MASSIVE hit area for fingers
+          pointHoverRadius: 10      // Grows when selected
         }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: (ctx) => `Vol: ${ctx.raw.toLocaleString()} lbs` } } },
+        interaction: {
+          mode: 'index',           // Shows tooltip for nearest point on X axis
+          intersect: false         // User doesn't have to touch point exactly
+        },
+        plugins: { 
+          legend: { display: false }, 
+          tooltip: { 
+            enabled: true,
+            displayColors: false,
+            titleFont: { size: 14 },
+            bodyFont: { size: 16, weight: 'bold' },
+            callbacks: { label: (ctx) => `Vol: ${ctx.raw.toLocaleString()} lbs` } 
+          } 
+        },
         scales: { x: { display: false }, y: { display: false } }
       }
     });

@@ -10,52 +10,47 @@
     
     body { 
       background: #000; color: #fff; font-family: -apple-system, sans-serif; 
-      margin: 0; overflow: hidden; height: 100vh;
+      margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column;
     }
     
-    /* Sticky Navigation */
     .top-nav {
-      position: fixed; top: 0; width: 100%; z-index: 2000;
+      flex: 0 0 auto; z-index: 2000;
       background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid #222; padding-top: env(safe-area-inset-top);
     }
 
     .header-main { padding: 10px; text-align: center; font-size: 13px; color: #00FF9C; text-transform: uppercase; letter-spacing: 1px; }
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-    
-    .menu-btn { 
-      background: none; border: none; color: #00FF9C; font-size: 32px; 
-      padding: 5px 10px; cursor: pointer;
-    }
+    .menu-btn { background: none; border: none; color: #00FF9C; font-size: 32px; padding: 5px 10px; cursor: pointer; }
 
-    /* Menu positioned globally */
     .menu-content { 
       display: none; position: fixed; right: 15px; top: 110px; 
       background: #1a1a1a; border: 1px solid #333; border-radius: 12px; 
       z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     }
     .menu-item { padding: 18px; color: #fff; border-bottom: 1px solid #222; font-weight: 500; text-align: center;}
-    .menu-item:last-child { border: none; }
-    .menu-item:active { background: #333; }
 
-    /* Carousel Space */
+    /* Carousel Container - Fixed Height Logic */
     .carousel-container {
+      flex: 1; /* Takes all remaining vertical space */
       display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
       scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-      margin-top: 115px; height: calc(100vh - 115px - 75px); 
     }
     .carousel-container::-webkit-scrollbar { display: none; }
 
-    .card-wrapper { min-width: 100vw; scroll-snap-align: center; padding: 10px 15px; display: flex; flex-direction: column; }
+    .card-wrapper { 
+      min-width: 100vw; height: 100%; scroll-snap-align: center; 
+      padding: 15px; display: flex; flex-direction: column; 
+    }
     .card { 
-      background: #111; padding: 18px; border-radius: 20px; border: 1px solid #222;
-      height: 100%; display: flex; flex-direction: column; justify-content: space-between;
+      background: #111; padding: 20px; border-radius: 20px; border: 1px solid #222;
+      flex: 1; display: flex; flex-direction: column; justify-content: space-between;
     }
 
     .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
     .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
 
-    canvas { width: 100% !important; flex-grow: 1; max-height: 230px; margin: 10px 0; touch-action: manipulation; }
+    canvas { width: 100% !important; flex: 1; min-height: 180px; max-height: 250px; margin: 10px 0; }
 
     .input-row { display: flex; gap: 12px; margin-top: 5px; }
     input { 
@@ -69,23 +64,19 @@
     }
 
     .dots { 
-      display: flex; justify-content: center; gap: 8px; height: 75px; 
-      padding-top: 15px; background: #000; position: fixed; bottom: 0; width: 100%; 
-      padding-bottom: env(safe-area-inset-bottom);
+      flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; 
+      padding-top: 15px; background: #000; padding-bottom: env(safe-area-inset-bottom);
     }
-    .dot { width: 6px; height: 6px; background: #333; border-radius: 50%; transition: 0.3s; }
+    .dot { width: 6px; height: 6px; background: #333; border-radius: 50%; }
     .dot.active { background: #00FF9C; transform: scale(1.3); }
 
-    #timer-overlay { 
-      display: none; position: fixed; top: 0; width: 100%; background: #00FF9C; 
-      color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; 
+    .loading-state {
+        display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: #00FF9C; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
-<div id="timer-overlay">REST: <span id="timer-count">10</span>s</div>
 
 <div class="top-nav">
   <div class="header-main" id="dayTitle">Syncing...</div>
@@ -99,47 +90,39 @@
 </div>
 
 <div class="menu-content" id="navMenu">
-  <div class="menu-item" onclick="finishWorkout()">Finish & Switch Day</div>
-  <div class="menu-item" onclick="location.reload()">Refresh Data</div>
+  <div class="menu-item" onclick="handleMenuAction(finishWorkout)">Finish & Switch Day</div>
+  <div class="menu-item" onclick="handleMenuAction(loadData)">Refresh Data</div>
 </div>
 
-<div class="carousel-container" id="app"></div>
+<div class="carousel-container" id="app">
+    <div class="loading-state">Updating...</div>
+</div>
 <div class="dots" id="dots"></div>
 
 <script>
-  // Global Toggle Function - DEFINED FIRST
   function toggleMenu() {
     const m = document.getElementById("navMenu");
-    if (m.style.display === "block") {
-      m.style.display = "none";
-    } else {
-      m.style.display = "block";
-    }
+    m.style.display = (m.style.display === "block") ? "none" : "block";
   }
 
-  // Close menu when clicking away
-  document.addEventListener('click', function(event) {
-    const menu = document.getElementById("navMenu");
-    const btn = document.querySelector('.menu-btn');
-    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== btn) {
-      menu.style.display = 'none';
-    }
-  });
+  function handleMenuAction(actionFn) {
+    toggleMenu(); // Close menu immediately
+    actionFn();   // Run the refresh or switch
+  }
 
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
 
-  // REPLACE WITH YOUR ACTUAL URL
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
   function loadData() {
+    document.getElementById("app").innerHTML = '<div class="loading-state">Fetching Latest...</div>';
     fetch(scriptURL, { redirect: "follow" })
       .then(res => res.json())
       .then(data => {
         document.getElementById("dayTitle").innerText = data.day || "Workout";
         render(data.next || []);
-      })
-      .catch(() => document.getElementById("dayTitle").innerText = "Connection Error");
+      });
   }
 
   function render(list) {
@@ -158,8 +141,8 @@
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
         <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items: flex-start;">
-            <h3 style="margin:0; font-size:20px; line-height:1.2; max-width:70%;">${ex.name}</h3>
+          <div style="display:flex; justify-content:space-between;">
+            <h3 style="margin:0; font-size:22px; line-height:1.2;">${ex.name}</h3>
             <div style="text-align:right;"><div class="small">Goal</div><div class="val">${ex.targetReps}-${ex.repMax}</div></div>
           </div>
           <canvas id="chart-${i}"></canvas>
@@ -193,8 +176,7 @@
       data: {
         labels: history.map(h => h.d),
         datasets: [{ 
-          data: history.map(h => h.v), 
-          borderColor: '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', 
+          data: history.map(h => h.v), borderColor: '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', 
           fill: true, tension: 0.4, pointRadius: 5, pointHitRadius: 40 
         }]
       },
@@ -223,19 +205,7 @@
   function logSet(name, i, btn) {
     const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
     btn.disabled = true; btn.innerText = "Saving...";
-    startTimer(10);
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
-  }
-
-  function startTimer(seconds) {
-    const overlay = document.getElementById("timer-overlay");
-    const display = document.getElementById("timer-count");
-    overlay.style.display = "block";
-    let timeLeft = seconds;
-    const interval = setInterval(() => {
-      timeLeft--; display.innerText = timeLeft;
-      if (timeLeft <= 0) { clearInterval(interval); overlay.style.display = "none"; }
-    }, 1000);
   }
 
   function finishWorkout() {

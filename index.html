@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#00FF9C">
   <title>StrongTracker Pro</title>
   <style>
-    * { box-sizing: border-box; } /* Ensures padding doesn't break layout */
+    * { box-sizing: border-box; }
     
     body { 
       background: #000; 
@@ -17,20 +17,20 @@
     }
 
     .header { 
-      padding: 20px; 
+      padding: 15px; 
       text-align: center; 
-      font-size: 18px; 
+      font-size: 16px; 
       color: #00FF9C; 
       border-bottom: 1px solid #222; 
       position: sticky; 
       top: 0; 
-      background: rgba(0,0,0,0.9); 
+      background: rgba(0,0,0,0.95); 
       z-index: 100; 
       backdrop-filter: blur(10px);
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    /* Timer Overlay - Updated to 10s default */
     #timer-overlay { 
       display: none; 
       position: fixed; 
@@ -47,6 +47,18 @@
     }
 
     .container { padding: 15px; max-width: 500px; margin: auto; }
+
+    /* New Summary Bar Style */
+    .summary-bar {
+      background: #111;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #00FF9C;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
     .card { 
       background: #111; 
@@ -77,8 +89,6 @@
       outline: none;
     }
 
-    input:focus { border-color: #00FF9C; }
-
     button { 
       width: 100%; 
       padding: 16px; 
@@ -102,6 +112,11 @@
 <div class="header" id="dayTitle">Workout Tracker</div>
 
 <div class="container">
+  <div id="summary" class="summary-bar">
+    <div><div class="small">Session Volume</div><div class="val" id="totalVol">0 lbs</div></div>
+    <div style="text-align: right;"><div class="small">Exercises Completed</div><div class="val" id="totalDone">0 / 0</div></div>
+  </div>
+
   <div id="app"></div>
   <button class="finish-btn" id="fBtn" onclick="finishWorkout()">Finish Workout & Switch Day</button>
 </div>
@@ -125,7 +140,21 @@
     const app = document.getElementById("app");
     app.innerHTML = "";
     
+    let totalSessionVolume = 0;
+    let completedExercises = 0;
+
     list.forEach((ex, i) => {
+      // Calculate Session Volume (Today's contribution only)
+      const latestHistory = ex.history[ex.history.length - 1];
+      const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+      
+      // If the last entry in history matches today's date label
+      if (latestHistory && latestHistory.d === today) {
+        totalSessionVolume += latestHistory.v;
+      }
+      
+      if (ex.setsDone >= 3) completedExercises++;
+
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
@@ -133,17 +162,14 @@
           <h3>${ex.name}</h3>
           <div style="text-align: right;">
             <div class="small">Goal Range</div>
-            <div class="val" style="font-size: 14px;">${ex.targetReps}-${ex.repMax} Reps</div>
+            <div class="val" style="font-size: 14px;">${ex.targetReps}-${ex.repMax}</div>
           </div>
         </div>
-
         <canvas id="chart-${i}"></canvas>
-
         <div style="display: flex; justify-content: space-between;">
           <div><div class="small">Suggested</div><div class="val">${ex.weight} lbs</div></div>
           <div style="text-align: right;"><div class="small">Sets Done</div><div class="val">${ex.setsDone} / 3</div></div>
         </div>
-
         ${ex.setsDone < 3 ? `
           <div class="input-row">
             <input type="number" id="w-${i}" value="${ex.weight}">
@@ -155,6 +181,10 @@
       app.appendChild(card);
       if (ex.history.length > 0) buildChart(`chart-${i}`, ex.history);
     });
+
+    // Update Summary Bar
+    document.getElementById("totalVol").innerText = totalSessionVolume.toLocaleString() + " lbs";
+    document.getElementById("totalDone").innerText = `${completedExercises} / ${list.length}`;
   }
 
   function buildChart(id, history) {
@@ -174,10 +204,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { 
-          legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `Volume: ${ctx.raw.toLocaleString()} lbs` } }
-        },
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
         scales: { x: { display: false }, y: { display: false } }
       }
     });
@@ -188,9 +215,7 @@
     const r = document.getElementById(`r-${i}`).value;
     btn.disabled = true;
     btn.innerText = "Saving...";
-
-    // FIX 2: Change logic to 10
-    startTimer(10);
+    startTimer(10); // 10s Timer
 
     fetch(scriptURL, { 
       method: "POST", 
@@ -203,8 +228,7 @@
     const display = document.getElementById("timer-count");
     overlay.style.display = "block";
     let timeLeft = seconds;
-    display.innerText = timeLeft; // Update immediately
-    
+    display.innerText = timeLeft;
     const interval = setInterval(() => {
       timeLeft--;
       display.innerText = timeLeft;
@@ -217,9 +241,7 @@
 
   function finishWorkout() {
     if(!confirm("Switch to the next day?")) return;
-    const btn = document.getElementById("fBtn");
-    btn.disabled = true;
-    btn.innerText = "Switching...";
+    document.getElementById("fBtn").disabled = true;
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) })
       .then(() => location.reload());
   }

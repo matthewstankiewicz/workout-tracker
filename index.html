@@ -15,7 +15,6 @@
     
     .container { padding: 15px; max-width: 500px; margin: auto; }
     
-    /* Session Summary Bar */
     .summary-bar { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #00FF9C; display: flex; justify-content: space-between; align-items: center; }
     
     .card { background: #111; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #222; }
@@ -23,11 +22,10 @@
     .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
     .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
 
-    /* FIX 2: Allow manipulation for zooming */
     canvas { 
       width: 100% !important; 
-      height: 140px !important; /* Slightly taller for better visibility */
-      margin: 15px 0; 
+      height: 140px !important; 
+      margin: 10px 0; 
       touch-action: manipulation; 
     }
 
@@ -58,6 +56,7 @@
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
 
+  // REPLACE THIS URL with your current "Web App" URL from the "New Deployment"
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
   function loadData() {
@@ -67,7 +66,10 @@
         document.getElementById("dayTitle").innerText = data.day || "Workout";
         render(data.next || []);
       })
-      .catch(err => console.error("Load failed", err));
+      .catch(err => {
+        console.error("Load failed", err);
+        document.getElementById("app").innerHTML = "<p style='color:red; text-align:center;'>Connection Error. Refresh page.</p>";
+      });
   }
 
   function render(list) {
@@ -112,7 +114,7 @@
     document.getElementById("totalDone").innerText = `${completed} / ${list.length}`;
   }
 
-function buildChart(id, history) {
+  function buildChart(id, history) {
     const ctx = document.getElementById(id);
     new Chart(ctx, {
       type: 'line',
@@ -122,58 +124,29 @@ function buildChart(id, history) {
           data: history.map(h => h.v), 
           borderColor: '#00FF9C', 
           backgroundColor: 'rgba(0, 255, 156, 0.1)',
-          fill: true, 
-          tension: 0.4, 
-          pointRadius: 6, 
-          pointBackgroundColor: '#00FF9C', 
-          pointHitRadius: 40
+          fill: true, tension: 0.4, 
+          pointRadius: 6, pointBackgroundColor: '#00FF9C', pointHitRadius: 45
         }]
       },
       options: {
-        responsive: true, 
-        maintainAspectRatio: false,
-        layout: {
-          padding: {
-            top: 30 // Extra space at the top so the tooltip doesn't overlap the line
-          }
-        },
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 35 } },
+        interaction: { mode: 'index', intersect: false },
         plugins: { 
           legend: { display: false }, 
           tooltip: { 
             enabled: true,
-            position: 'nearest',
-            caretSize: 0,               // Removes the "arrow" pointing to the dot
-            backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+            backgroundColor: 'rgba(20, 20, 20, 0.9)',
             titleFont: { size: 14 },
-            bodyFont: { size: 22, weight: 'bold' }, // Huge font for the weight
-            bodyAlign: 'center',
-            titleAlign: 'center',
-            padding: 10,
+            bodyFont: { size: 22, weight: 'bold' },
+            padding: 12,
             displayColors: false,
-            // Custom positioning: This forces the tooltip to stay at the top
-            external: function(context) {
-              let tooltipEl = document.getElementById('chartjs-tooltip');
-              if (!tooltipEl) {
-                tooltipEl = document.createElement('div');
-                tooltipEl.id = 'chartjs-tooltip';
-                document.body.appendChild(tooltipEl);
-              }
-            },
-            callbacks: { 
-              label: (ctx) => `${ctx.raw.toLocaleString()} lbs` 
-            } 
+            callbacks: { label: (ctx) => `${ctx.raw.toLocaleString()} lbs` } 
           } 
         },
         scales: { 
           x: { display: false }, 
-          y: { 
-            display: false,
-            grace: '20%' // Adds 20% "headroom" above the highest data point
-          } 
+          y: { display: false, grace: '25%' } 
         }
       }
     });
@@ -184,7 +157,9 @@ function buildChart(id, history) {
     const r = document.getElementById(`r-${i}`).value;
     btn.disabled = true; btn.innerText = "Saving...";
     startTimer(10);
-    fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
+    fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) })
+      .then(() => loadData())
+      .catch(() => { btn.disabled = false; btn.innerText = "Log Set"; });
   }
 
   function startTimer(seconds) {
@@ -201,7 +176,9 @@ function buildChart(id, history) {
 
   function finishWorkout() {
     if(!confirm("Switch Day?")) return;
-    fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload());
+    document.getElementById("fBtn").disabled = true;
+    fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) })
+      .then(() => location.reload());
   }
   loadData();
 </script>

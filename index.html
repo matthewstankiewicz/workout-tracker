@@ -1,3 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00FF9C">
+  <title>StrongTracker Pro</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 100px; }
+    
+    .header { padding: 15px; text-align: center; font-size: 16px; color: #00FF9C; border-bottom: 1px solid #222; position: sticky; top: 0; background: rgba(0,0,0,0.95); z-index: 100; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; }
+    
+    #timer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #00FF9C; color: #000; text-align: center; padding: 12px; font-weight: bold; font-size: 18px; z-index: 1000; }
+    
+    .container { padding: 15px; max-width: 500px; margin: auto; }
+    
+    /* Session Summary Bar */
+    .summary-bar { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #00FF9C; display: flex; justify-content: space-between; align-items: center; }
+    
+    .card { background: #111; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #222; }
+    .card h3 { margin: 0; font-size: 18px; color: #fff; }
+    .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+    .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
+
+    /* FIX 2: Allow manipulation for zooming */
+    canvas { 
+      width: 100% !important; 
+      height: 140px !important; /* Slightly taller for better visibility */
+      margin: 15px 0; 
+      touch-action: manipulation; 
+    }
+
+    .input-row { display: flex; gap: 12px; margin-top: 15px; width: 100%; }
+    input { flex: 1; min-width: 0; padding: 14px; background: #222; border: 1px solid #333; color: #fff; border-radius: 10px; font-size: 18px; text-align: center; outline: none; }
+    
+    button { width: 100%; padding: 16px; background: #00FF9C; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 12px; color: #000; }
+    button:disabled { background: #222; color: #555; }
+    .finish-btn { background: #222; color: #fff; border: 1px solid #444; margin-top: 40px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div id="timer-overlay">RESTING: <span id="timer-count">10</span>s</div>
+<div class="header" id="dayTitle">Workout Tracker</div>
+
+<div class="container">
+  <div id="summary" class="summary-bar">
+    <div><div class="small">Session Volume</div><div class="val" id="totalVol">0 lbs</div></div>
+    <div style="text-align: right;"><div class="small">Progress</div><div class="val" id="totalDone">0 / 0</div></div>
+  </div>
+  <div id="app"></div>
+  <button class="finish-btn" id="fBtn" onclick="finishWorkout()">Finish Workout & Switch Day</button>
+</div>
+
+<script>
+  let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
+  if (userKey) localStorage.setItem("workout_key", userKey);
+
+  const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
+
+  function loadData() {
+    fetch(scriptURL, { redirect: "follow" })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("dayTitle").innerText = data.day || "Workout";
+        render(data.next || []);
+      })
+      .catch(err => console.error("Load failed", err));
+  }
+
+  function render(list) {
+    const app = document.getElementById("app");
+    app.innerHTML = "";
+    let sessionVol = 0; 
+    let completed = 0;
+    const now = new Date();
+    const todayLabel = (now.getMonth() + 1).toString().padStart(2, '0') + '/' + now.getDate().toString().padStart(2, '0');
+
+    list.forEach((ex, i) => {
+      if (ex.history && ex.history.length > 0) {
+        const lastEntry = ex.history[ex.history.length - 1];
+        if (lastEntry.d === todayLabel) sessionVol += (Number(lastEntry.v) || 0);
+      }
+      if (ex.setsDone >= 3) completed++;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <h3>${ex.name}</h3>
+          <div style="text-align: right;"><div class="small">Goal Range</div><div class="val">${ex.targetReps || '8'}-${ex.repMax || '12'}</div></div>
+        </div>
+        <canvas id="chart-${i}"></canvas>
+        <div style="display: flex; justify-content: space-between;">
+          <div><div class="small">Suggested</div><div class="val">${ex.weight || 0} lbs</div></div>
+          <div style="text-align: right;"><div class="small">Sets Done</div><div class="val">${ex.setsDone || 0} / 3</div></div>
+        </div>
+        ${ex.setsDone < 3 ? `
+          <div class="input-row">
+            <input type="number" id="w-${i}" value="${ex.weight || 0}">
+            <input type="number" id="r-${i}" value="${ex.reps || 0}">
+          </div>
+          <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
+        ` : `<button disabled style="margin-top:20px;">✓ Done</button>`}
+      `;
+      app.appendChild(card);
+      if (ex.history && ex.history.length > 0) buildChart(`chart-${i}`, ex.history);
+    });
+    document.getElementById("totalVol").innerText = sessionVol.toLocaleString() + " lbs";
+    document.getElementById("totalDone").innerText = `${completed} / ${list.length}`;
+  }
+
 function buildChart(id, history) {
     const ctx = document.getElementById(id);
     new Chart(ctx, {
@@ -64,3 +178,32 @@ function buildChart(id, history) {
       }
     });
   }
+
+  function logSet(name, i, btn) {
+    const w = document.getElementById(`w-${i}`).value;
+    const r = document.getElementById(`r-${i}`).value;
+    btn.disabled = true; btn.innerText = "Saving...";
+    startTimer(10);
+    fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
+  }
+
+  function startTimer(seconds) {
+    const overlay = document.getElementById("timer-overlay");
+    const display = document.getElementById("timer-count");
+    overlay.style.display = "block";
+    let timeLeft = seconds;
+    display.innerText = timeLeft;
+    const interval = setInterval(() => {
+      timeLeft--; display.innerText = timeLeft;
+      if (timeLeft <= 0) { clearInterval(interval); overlay.style.display = "none"; }
+    }, 1000);
+  }
+
+  function finishWorkout() {
+    if(!confirm("Switch Day?")) return;
+    fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload());
+  }
+  loadData();
+</script>
+</body>
+</html>

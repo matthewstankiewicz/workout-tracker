@@ -136,12 +136,35 @@
           legend: { display: false }, 
           tooltip: { 
             enabled: true,
-            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+            backgroundColor: 'rgba(20, 20, 20, 0.95)',
             titleFont: { size: 14 },
             bodyFont: { size: 22, weight: 'bold' },
             padding: 12,
             displayColors: false,
-            callbacks: { label: (ctx) => `${ctx.raw.toLocaleString()} lbs` } 
+            callbacks: {
+              // This logic changes the text color to gold if volume increased
+              labelTextColor: function(context) {
+                const index = context.dataIndex;
+                const currentVal = context.raw;
+                const prevVal = index > 0 ? context.dataset.data[index - 1] : null;
+
+                if (prevVal !== null && currentVal > prevVal) {
+                  return '#FFD700'; // Gold color
+                }
+                return '#00FF9C'; // Default Green
+              },
+              label: function(context) {
+                const index = context.dataIndex;
+                const currentVal = context.raw;
+                const prevVal = index > 0 ? context.dataset.data[index - 1] : null;
+                
+                let label = `${currentVal.toLocaleString()} lbs`;
+                if (prevVal !== null && currentVal > prevVal) {
+                  label = `★ ${label} (PR)`;
+                }
+                return label;
+              }
+            } 
           } 
         },
         scales: { 

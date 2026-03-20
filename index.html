@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#00FF9C">
   <title>StrongTracker Pro</title>
   <style>
-    * { box-sizing: border-box; } /* The fix for the padding issue */
+    * { box-sizing: border-box; } /* Ensures padding doesn't break layout */
     
     body { 
       background: #000; 
@@ -14,7 +14,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
       margin: 0; 
       padding-bottom: 100px; 
-      overflow-x: hidden;
     }
 
     .header { 
@@ -29,9 +28,9 @@
       z-index: 100; 
       backdrop-filter: blur(10px);
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
+    /* Timer Overlay - Updated to 10s default */
     #timer-overlay { 
       display: none; 
       position: fixed; 
@@ -45,14 +44,9 @@
       font-weight: bold; 
       font-size: 18px; 
       z-index: 1000; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
     }
 
-    .container { 
-      padding: 15px; 
-      max-width: 500px; 
-      margin: auto; 
-    }
+    .container { padding: 15px; max-width: 500px; margin: auto; }
 
     .card { 
       background: #111; 
@@ -63,33 +57,16 @@
     }
 
     .card h3 { margin: 0; font-size: 18px; color: #fff; }
-    
-    .small { 
-      font-size: 10px; 
-      color: #888; 
-      text-transform: uppercase; 
-      letter-spacing: 0.5px; 
-      margin-bottom: 2px;
-    }
-    
+    .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
     .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
 
-    canvas { 
-      width: 100% !important; 
-      height: 100px !important; 
-      margin: 15px 0; 
-    }
+    canvas { width: 100% !important; height: 100px !important; margin: 15px 0; }
 
-    .input-row { 
-      display: flex; 
-      gap: 12px; 
-      margin-top: 15px; 
-      width: 100%;
-    }
+    .input-row { display: flex; gap: 12px; margin-top: 15px; width: 100%; }
 
     input { 
       flex: 1; 
-      min-width: 0; /* Prevents flex items from growing past container */
+      min-width: 0; 
       padding: 14px; 
       background: #222; 
       border: 1px solid #333; 
@@ -98,7 +75,6 @@
       font-size: 18px; 
       text-align: center; 
       outline: none;
-      -webkit-appearance: none;
     }
 
     input:focus { border-color: #00FF9C; }
@@ -113,18 +89,10 @@
       font-size: 16px; 
       cursor: pointer; 
       margin-top: 12px; 
-      transition: transform 0.1s;
     }
 
-    button:active { transform: scale(0.98); }
-    button:disabled { background: #222; color: #555; cursor: not-allowed; }
-
-    .finish-btn { 
-      background: #222; 
-      color: #fff; 
-      border: 1px solid #444; 
-      margin-top: 40px; 
-    }
+    button:disabled { background: #222; color: #555; }
+    .finish-btn { background: #222; color: #fff; border: 1px solid #444; margin-top: 40px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -142,7 +110,6 @@
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
 
-  // Replace with your actual deployed Script URL
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
   function loadData() {
@@ -173,20 +140,14 @@
         <canvas id="chart-${i}"></canvas>
 
         <div style="display: flex; justify-content: space-between;">
-          <div>
-            <div class="small">Suggested</div>
-            <div class="val">${ex.weight} lbs</div>
-          </div>
-          <div style="text-align: right;">
-            <div class="small">Sets Done</div>
-            <div class="val">${ex.setsDone} / 3</div>
-          </div>
+          <div><div class="small">Suggested</div><div class="val">${ex.weight} lbs</div></div>
+          <div style="text-align: right;"><div class="small">Sets Done</div><div class="val">${ex.setsDone} / 3</div></div>
         </div>
 
         ${ex.setsDone < 3 ? `
           <div class="input-row">
-            <input type="number" id="w-${i}" value="${ex.weight}" placeholder="Lbs">
-            <input type="number" id="r-${i}" value="${ex.reps}" placeholder="Reps">
+            <input type="number" id="w-${i}" value="${ex.weight}">
+            <input type="number" id="r-${i}" value="${ex.reps}">
           </div>
           <button onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
         ` : `<button disabled style="margin-top:20px;">✓ Done</button>`}
@@ -215,9 +176,7 @@
         maintainAspectRatio: false,
         plugins: { 
           legend: { display: false },
-          tooltip: {
-            callbacks: { label: (ctx) => `Volume: ${ctx.raw.toLocaleString()} lbs` }
-          }
+          tooltip: { callbacks: { label: (ctx) => `Volume: ${ctx.raw.toLocaleString()} lbs` } }
         },
         scales: { x: { display: false }, y: { display: false } }
       }
@@ -230,7 +189,7 @@
     btn.disabled = true;
     btn.innerText = "Saving...";
 
-    // Change '90' to your desired rest time in seconds
+    // FIX 2: Change logic to 10
     startTimer(10);
 
     fetch(scriptURL, { 
@@ -244,6 +203,8 @@
     const display = document.getElementById("timer-count");
     overlay.style.display = "block";
     let timeLeft = seconds;
+    display.innerText = timeLeft; // Update immediately
+    
     const interval = setInterval(() => {
       timeLeft--;
       display.innerText = timeLeft;
@@ -255,11 +216,10 @@
   }
 
   function finishWorkout() {
-    if(!confirm("Switch to the next day in your cycle?")) return;
+    if(!confirm("Switch to the next day?")) return;
     const btn = document.getElementById("fBtn");
     btn.disabled = true;
     btn.innerText = "Switching...";
-    
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) })
       .then(() => location.reload());
   }

@@ -30,18 +30,13 @@
     }
     .menu-item { padding: 18px; color: #fff; border-bottom: 1px solid #222; font-weight: 500; text-align: center;}
 
-    /* Carousel Container - Fixed Height Logic */
     .carousel-container {
-      flex: 1; /* Takes all remaining vertical space */
-      display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+      flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
       scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
     }
     .carousel-container::-webkit-scrollbar { display: none; }
 
-    .card-wrapper { 
-      min-width: 100vw; height: 100%; scroll-snap-align: center; 
-      padding: 15px; display: flex; flex-direction: column; 
-    }
+    .card-wrapper { min-width: 100vw; height: 100%; scroll-snap-align: center; padding: 15px; display: flex; flex-direction: column; }
     .card { 
       background: #111; padding: 20px; border-radius: 20px; border: 1px solid #222;
       flex: 1; display: flex; flex-direction: column; justify-content: space-between;
@@ -67,12 +62,10 @@
       flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; 
       padding-top: 15px; background: #000; padding-bottom: env(safe-area-inset-bottom);
     }
-    .dot { width: 6px; height: 6px; background: #333; border-radius: 50%; }
+    .dot { width: 6px; height: 6px; background: #333; border-radius: 50%; transition: transform 0.2s; }
     .dot.active { background: #00FF9C; transform: scale(1.3); }
 
-    .loading-state {
-        display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: #00FF9C; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;
-    }
+    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: #00FF9C; font-size: 14px; letter-spacing: 2px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -91,7 +84,7 @@
 
 <div class="menu-content" id="navMenu">
   <div class="menu-item" onclick="handleMenuAction(finishWorkout)">Finish & Switch Day</div>
-  <div class="menu-item" onclick="handleMenuAction(loadData)">Refresh Data</div>
+  <div class="menu-item" onclick="handleMenuAction(() => loadData(true))">Refresh Data</div>
 </div>
 
 <div class="carousel-container" id="app">
@@ -106,8 +99,8 @@
   }
 
   function handleMenuAction(actionFn) {
-    toggleMenu(); // Close menu immediately
-    actionFn();   // Run the refresh or switch
+    toggleMenu();
+    actionFn();
   }
 
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
@@ -115,17 +108,22 @@
 
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
-  function loadData() {
-    document.getElementById("app").innerHTML = '<div class="loading-state">Fetching Latest...</div>';
+  function loadData(isManualRefresh = false) {
+    const app = document.getElementById("app");
+    // Capture index before we wipe the UI
+    const currentIndex = Math.round(app.scrollLeft / window.innerWidth);
+    
+    if (isManualRefresh) app.innerHTML = '<div class="loading-state">Fetching Latest...</div>';
+    
     fetch(scriptURL, { redirect: "follow" })
       .then(res => res.json())
       .then(data => {
         document.getElementById("dayTitle").innerText = data.day || "Workout";
-        render(data.next || []);
+        render(data.next || [], currentIndex);
       });
   }
 
-  function render(list) {
+  function render(list, savedIndex = 0) {
     const app = document.getElementById("app");
     const dotsContainer = document.getElementById("dots");
     app.innerHTML = ""; dotsContainer.innerHTML = "";
@@ -161,9 +159,17 @@
       const d = document.createElement("div"); d.className = "dot"+(i===0?" active":""); dotsContainer.appendChild(d);
       if (ex.history?.length > 0) buildChart(`chart-${i}`, ex.history);
     });
+
     document.getElementById("totalVol").innerText = vol.toLocaleString() + " lbs";
     document.getElementById("totalDone").innerText = `${done} / ${list.length}`;
     
+    // Snaps back to the card you were just looking at
+    if (savedIndex > 0) {
+        requestAnimationFrame(() => {
+            app.scrollTo({ left: savedIndex * window.innerWidth, behavior: 'auto' });
+        });
+    }
+
     app.onscroll = () => {
       const idx = Math.round(app.scrollLeft / window.innerWidth);
       document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));

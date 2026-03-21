@@ -6,29 +6,51 @@
   <meta name="theme-color" content="#00FF9C">
   <title>StrongTracker Pro</title>
   <style>
+    /* Theme Variables */
+    :root {
+      --bg: #000000;
+      --card-bg: #111111;
+      --text: #ffffff;
+      --sub-text: #888888;
+      --border: #222222;
+      --accent: #00FF9C;
+      --input-bg: #222222;
+    }
+
+    [data-theme="light"] {
+      --bg: #f2f2f7;
+      --card-bg: #ffffff;
+      --text: #000000;
+      --sub-text: #666666;
+      --border: #dddddd;
+      --accent: #00bd73;
+      --input-bg: #eeeeee;
+    }
+
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     body { 
-      background: #000; color: #fff; font-family: -apple-system, sans-serif; 
+      background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; 
       margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column;
+      transition: background 0.3s ease;
     }
     
     .top-nav {
       flex: 0 0 auto; z-index: 2000;
-      background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
-      border-bottom: 1px solid #222; padding-top: env(safe-area-inset-top);
+      background: var(--bg); opacity: 0.95; backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top);
     }
 
-    .header-main { padding: 10px; text-align: center; font-size: 13px; color: #00FF9C; text-transform: uppercase; letter-spacing: 1px; }
+    .header-main { padding: 10px; text-align: center; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-    .menu-btn { background: none; border: none; color: #00FF9C; font-size: 32px; padding: 5px 10px; cursor: pointer; }
+    .menu-btn { background: none; border: none; color: var(--accent); font-size: 32px; padding: 5px 10px; cursor: pointer; }
 
     .menu-content { 
       display: none; position: fixed; right: 15px; top: 110px; 
-      background: #1a1a1a; border: 1px solid #333; border-radius: 12px; 
-      z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; 
+      z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
     }
-    .menu-item { padding: 18px; color: #fff; border-bottom: 1px solid #222; font-weight: 500; text-align: center;}
+    .menu-item { padding: 18px; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; text-align: center;}
 
     .carousel-container {
       flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
@@ -38,34 +60,34 @@
 
     .card-wrapper { min-width: 100vw; height: 100%; scroll-snap-align: center; padding: 15px; display: flex; flex-direction: column; }
     .card { 
-      background: #111; padding: 20px; border-radius: 20px; border: 1px solid #222;
+      background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border);
       flex: 1; display: flex; flex-direction: column; justify-content: space-between;
     }
 
-    .small { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-    .val { color: #00FF9C; font-weight: bold; font-size: 16px; }
+    .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; margin-bottom: 2px; }
+    .val { color: var(--accent); font-weight: bold; font-size: 16px; }
 
     canvas { width: 100% !important; flex: 1; min-height: 180px; max-height: 250px; margin: 10px 0; }
 
     .input-row { display: flex; gap: 12px; margin-top: 5px; }
     input { 
-      flex: 1; min-width: 0; padding: 15px; background: #222; border: 1px solid #333; 
-      color: #fff; border-radius: 12px; font-size: 20px; text-align: center; outline: none;
+      flex: 1; min-width: 0; padding: 15px; background: var(--input-bg); border: 1px solid var(--border); 
+      color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none;
     }
     
     .log-btn { 
-      width: 100%; padding: 18px; background: #00FF9C; border: none; border-radius: 12px; 
+      width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; 
       font-weight: bold; font-size: 16px; margin-top: 12px; color: #000;
     }
 
     .dots { 
       flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; 
-      padding-top: 15px; background: #000; padding-bottom: env(safe-area-inset-bottom);
+      padding-top: 15px; background: var(--bg); padding-bottom: env(safe-area-inset-bottom);
     }
-    .dot { width: 6px; height: 6px; background: #333; border-radius: 50%; transition: transform 0.2s; }
-    .dot.active { background: #00FF9C; transform: scale(1.3); }
+    .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
+    .dot.active { background: var(--accent); transform: scale(1.3); }
 
-    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: #00FF9C; font-size: 14px; letter-spacing: 2px; }
+    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: var(--accent); font-size: 14px; letter-spacing: 2px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -83,6 +105,7 @@
 </div>
 
 <div class="menu-content" id="navMenu">
+  <div class="menu-item" onclick="handleMenuAction(toggleTheme)">Toggle Light/Dark</div>
   <div class="menu-item" onclick="handleMenuAction(finishWorkout)">Finish & Switch Day</div>
   <div class="menu-item" onclick="handleMenuAction(() => loadData(true))">Refresh Data</div>
 </div>
@@ -93,6 +116,21 @@
 <div class="dots" id="dots"></div>
 
 <script>
+  // Theme Management
+  function initTheme() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+  
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    // Reload charts to update grid colors if necessary
+    loadData(false); 
+  }
+
   function toggleMenu() {
     const m = document.getElementById("navMenu");
     m.style.display = (m.style.display === "block") ? "none" : "block";
@@ -110,9 +148,7 @@
 
   function loadData(isManualRefresh = false) {
     const app = document.getElementById("app");
-    // Capture index before we wipe the UI
     const currentIndex = Math.round(app.scrollLeft / window.innerWidth);
-    
     if (isManualRefresh) app.innerHTML = '<div class="loading-state">Fetching Latest...</div>';
     
     fetch(scriptURL, { redirect: "follow" })
@@ -152,7 +188,7 @@
             ${ex.setsDone < 3 ? `
               <div class="input-row"><input type="number" id="w-${i}" value="${ex.weight}"><input type="number" id="r-${i}" value="${ex.reps}"></div>
               <button class="log-btn" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
-            ` : `<button class="log-btn" disabled style="background:#222; color:#00FF9C; border:1px solid #333;">✓ Complete</button>`}
+            ` : `<button class="log-btn" disabled style="background:var(--input-bg); color:var(--accent); border:1px solid var(--border);">✓ Complete</button>`}
           </div>
         </div>`;
       app.appendChild(wrapper);
@@ -163,7 +199,6 @@
     document.getElementById("totalVol").innerText = vol.toLocaleString() + " lbs";
     document.getElementById("totalDone").innerText = `${done} / ${list.length}`;
     
-    // Snaps back to the card you were just looking at
     if (savedIndex > 0) {
         requestAnimationFrame(() => {
             app.scrollTo({ left: savedIndex * window.innerWidth, behavior: 'auto' });
@@ -177,12 +212,13 @@
   }
 
   function buildChart(id, history) {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     new Chart(document.getElementById(id), {
       type: 'line',
       data: {
         labels: history.map(h => h.d),
         datasets: [{ 
-          data: history.map(h => h.v), borderColor: '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', 
+          data: history.map(h => h.v), borderColor: isLight ? '#00bd73' : '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', 
           fill: true, tension: 0.4, pointRadius: 5, pointHitRadius: 40 
         }]
       },
@@ -192,14 +228,15 @@
         plugins: { 
           legend: { display: false },
           tooltip: {
-            enabled: true, backgroundColor: 'rgba(20, 20, 20, 0.98)',
+            enabled: true, backgroundColor: isLight ? '#ffffff' : '#141414',
+            titleColor: isLight ? '#000000' : '#ffffff', bodyColor: isLight ? '#00bd73' : '#00FF9C',
             bodyFont: { size: 24, weight: 'bold' }, padding: 14, displayColors: false,
+            borderColor: isLight ? '#dddddd' : '#333333', borderWidth: 1,
             callbacks: {
               label: (c) => {
                 const prev = c.dataIndex > 0 ? c.dataset.data[c.dataIndex-1] : null;
                 return (prev && c.raw > prev) ? `★ ${c.raw.toLocaleString()} lbs` : `${c.raw.toLocaleString()} lbs`;
-              },
-              labelTextColor: (c) => (c.dataIndex > 0 && c.raw > c.dataset.data[c.dataIndex-1]) ? '#FFD700' : '#00FF9C'
+              }
             }
           }
         },
@@ -219,6 +256,7 @@
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload());
   }
 
+  initTheme();
   loadData();
 </script>
 </body>

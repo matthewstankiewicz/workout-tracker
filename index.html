@@ -168,7 +168,7 @@
     clearInterval(timerInterval);
     const banner = document.getElementById('timer-banner');
     banner.style.display = 'none';
-    banner.style.background = 'var(--accent)'; // Reset color
+    banner.style.background = 'var(--accent)'; 
   }
 
   function startTimer() {
@@ -195,7 +195,21 @@
     }, 1000);
   }
 
-  // --- Core App Logic ---
+  // Calculate 1RM using Epley Formula
+  function calc1RM(weight, reps) {
+    if (!weight || !reps || reps < 1) return 0;
+    if (reps == 1) return weight;
+    return Math.round(weight * (1 + (reps * 0.0333)));
+  }
+
+  // Update 1RM text live as user types
+  function updateLive1RM(i) {
+    const w = document.getElementById(`w-${i}`).value;
+    const r = document.getElementById(`r-${i}`).value;
+    const display = document.getElementById(`1rm-${i}`);
+    if (display) display.innerText = calc1RM(w, r) + " lbs";
+  }
+
   function initTheme() {
     const saved = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', saved);
@@ -239,6 +253,8 @@
       if (ex.history?.length > 0 && ex.history[ex.history.length-1].d === today) vol += Number(ex.history[ex.history.length-1].v || 0);
       if (ex.setsDone >= 3) done++;
 
+      const current1RM = calc1RM(ex.weight, ex.reps);
+
       const wrapper = document.createElement("div");
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
@@ -250,11 +266,18 @@
           <canvas id="chart-${i}"></canvas>
           <div>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-              <div><div class="small">Suggested</div><div class="val" style="font-size:18px;">${ex.weight} lbs</div></div>
+              <div>
+                <div class="small">Suggested</div>
+                <div class="val" style="font-size:18px;">${ex.weight} lbs × ${ex.reps}</div>
+                <div class="small" style="margin-top:4px; color:var(--accent); opacity:0.8;">Est. 1RM: <b id="1rm-${i}">${current1RM} lbs</b></div>
+              </div>
               <div style="text-align:right;"><div class="small">Sets Done</div><div class="val" style="font-size:18px;">${ex.setsDone} / 3</div></div>
             </div>
             ${ex.setsDone < 3 ? `
-              <div class="input-row"><input type="number" id="w-${i}" value="${ex.weight}"><input type="number" id="r-${i}" value="${ex.reps}"></div>
+              <div class="input-row">
+                <input type="number" id="w-${i}" value="${ex.weight}" oninput="updateLive1RM(${i})">
+                <input type="number" id="r-${i}" value="${ex.reps}" oninput="updateLive1RM(${i})">
+              </div>
               <button class="log-btn" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
             ` : `<button class="log-btn" disabled style="background:var(--input-bg); color:var(--accent); border:1px solid var(--border);">✓ Complete</button>`}
           </div>

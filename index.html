@@ -141,7 +141,6 @@
   function toggleMenu(id) {
     const el = document.getElementById(id);
     const isVisible = el.style.display === "block";
-    // Close everything first
     document.getElementById('navMenu').style.display = 'none';
     document.getElementById('settingsPanel').style.display = 'none';
     if (!isVisible) el.style.display = "block";
@@ -178,12 +177,18 @@
       display.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(timerInterval);
+        
+        // Haptic Feedback
+        if ("vibrate" in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
+
         banner.style.background = '#ff4444';
         display.innerText = "READY!";
         setTimeout(() => { 
           banner.style.display = 'none'; 
           banner.style.background = 'var(--accent)'; 
-        }, 3000);
+        }, 4000);
       }
     }, 1000);
   }

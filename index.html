@@ -163,35 +163,42 @@
     document.getElementById('settingsPanel').style.display = 'none';
   }
 
-  function startTimer() {
-    clearInterval(timerInterval);
-    const banner = document.getElementById('timer-banner');
-    const display = document.getElementById('timer-count');
-    let timeLeft = restTime;
-    
-    banner.style.display = 'block';
-    display.innerText = timeLeft;
-
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      display.innerText = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        
-        // Haptic Feedback
-        if ("vibrate" in navigator) {
-          navigator.vibrate([200, 100, 200]);
-        }
-
-        banner.style.background = '#ff4444';
-        display.innerText = "READY!";
-        setTimeout(() => { 
-          banner.style.display = 'none'; 
-          banner.style.background = 'var(--accent)'; 
-        }, 4000);
-      }
-    }, 1000);
+function startTimer() {
+  clearInterval(timerInterval);
+  const banner = document.getElementById('timer-banner');
+  const display = document.getElementById('timer-count');
+  let timeLeft = restTime;
+  
+  // PRIME THE VIBRATION: Trigger a tiny, 1ms pulse now 
+  // while the browser still sees this as a "user click"
+  if ("vibrate" in navigator) {
+    navigator.vibrate(1); 
   }
+
+  banner.style.display = 'block';
+  display.innerText = timeLeft;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    display.innerText = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      
+      // REAL VIBRATION: Longer pulses for the finish
+      if ("vibrate" in navigator) {
+        // Try a more aggressive pattern: 500ms on, 200ms off, 500ms on
+        navigator.vibrate([500, 200, 500]);
+      }
+
+      banner.style.background = '#ff4444';
+      display.innerText = "READY!";
+      setTimeout(() => { 
+        banner.style.display = 'none'; 
+        banner.style.background = 'var(--accent)'; 
+      }, 4000);
+    }
+  }, 1000);
+}
 
   // --- Core App Logic ---
   function initTheme() {

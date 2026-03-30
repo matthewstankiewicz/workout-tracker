@@ -281,8 +281,8 @@
             </div>
             ${ex.setsDone < 3 ? `
               <div class="input-row">
-                <input type="number" id="w-${i}" value="${ex.weight}" oninput="updateLive1RM(${i})">
-                <input type="number" id="r-${i}" value="${ex.reps}" oninput="updateLive1RM(${i})">
+                <input type="number" id="w-${i}" value="${ex.weight}" placeholder="Weight" oninput="updateLive1RM(${i})">
+                <input type="number" id="r-${i}" value="" placeholder="Reps" oninput="updateLive1RM(${i})">
               </div>
               <button class="log-btn" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
             ` : `<button class="log-btn" disabled style="background:var(--input-bg); color:var(--accent); border:1px solid var(--border);">✓ Complete</button>`}
@@ -344,6 +344,7 @@
 
   function logSet(name, i, btn) {
     const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
+    if(!r) { alert("Please enter reps"); return; }
     btn.disabled = true; btn.innerText = "Saving...";
     startTimer();
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());

@@ -195,14 +195,12 @@
     }, 1000);
   }
 
-  // Calculate 1RM using Epley Formula
   function calc1RM(weight, reps) {
     if (!weight || !reps || reps < 1) return 0;
     if (reps == 1) return weight;
     return Math.round(weight * (1 + (reps * 0.0333)));
   }
 
-  // Update 1RM text live as user types
   function updateLive1RM(i) {
     const w = document.getElementById(`w-${i}`).value;
     const r = document.getElementById(`r-${i}`).value;
@@ -259,19 +257,27 @@
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
         <div class="card">
-          <div style="display:flex; justify-content:space-between;">
+          <div style="text-align:center;">
             <h3 style="margin:0; font-size:22px; line-height:1.2;">${ex.name}</h3>
-            <div style="text-align:right;"><div class="small">Goal</div><div class="val">${ex.targetReps}-${ex.repMax}</div></div>
           </div>
           <canvas id="chart-${i}"></canvas>
           <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-              <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; text-align:center;">
+              <div style="flex:1;">
                 <div class="small">Suggested</div>
                 <div class="val" style="font-size:18px;">${ex.weight} lbs × ${ex.reps}</div>
                 <div class="small" style="margin-top:4px; color:var(--accent); opacity:0.8;">Est. 1RM: <b id="1rm-${i}">${current1RM} lbs</b></div>
               </div>
-              <div style="text-align:right;"><div class="small">Sets Done</div><div class="val" style="font-size:18px;">${ex.setsDone} / 3</div></div>
+              
+              <div style="flex:1; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+                <div class="small">Goal</div>
+                <div class="val" style="font-size:18px;">${ex.targetReps}-${ex.repMax}</div>
+              </div>
+
+              <div style="flex:1;">
+                <div class="small">Sets Done</div>
+                <div class="val" style="font-size:18px;">${ex.setsDone} / 3</div>
+              </div>
             </div>
             ${ex.setsDone < 3 ? `
               <div class="input-row">

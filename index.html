@@ -55,7 +55,6 @@
 
     canvas { width: 100% !important; flex: 1; min-height: 150px; max-height: 220px; margin: 10px 0; }
 
-    /* REFINED INPUT ROW */
     .input-row { 
       display: flex; 
       gap: 10px; 
@@ -191,7 +190,7 @@
       const historyArr = ex.history || [];
       const isTodayInHistory = historyArr.length > 0 && historyArr[historyArr.length-1].d === today;
       const prevSessionIndex = isTodayInHistory ? historyArr.length - 2 : historyArr.length - 1;
-      const prevSession = historyArr[prevSessionIndex] || { d: "N/A", s: "No history" };
+      const prevSession = historyArr[prevSessionIndex] || { d: "N/A", s: "" };
       
       const wrapper = document.createElement("div");
       wrapper.className = "card-wrapper";
@@ -202,7 +201,7 @@
           
           <div class="prev-session">
              <div class="small">Last Session (${prevSession.d})</div>
-             <div class="prev-data">${prevSession.s.split('\n').join(' | ')}</div>
+             <div class="prev-data">${prevSession.s ? prevSession.s.split('\n').reverse().join(' | ') : 'No history'}</div>
           </div>
 
           <div>

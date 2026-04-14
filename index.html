@@ -34,9 +34,12 @@
     .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; }
     .val { color: var(--accent); font-weight: bold; font-size: 16px; }
     canvas { width: 100% !important; flex: 1; min-height: 180px; max-height: 250px; margin: 10px 0; }
-    .input-row { display: flex; gap: 12px; }
-    input { flex: 1; padding: 15px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
-    .log-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; margin-top: 12px; color: #000; }
+    
+    /* INPUT ROW FIX */
+    .input-row { display: flex; gap: 12px; justify-content: center; max-width: 280px; margin: 0 auto; }
+    input { flex: 1; width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
+    .log-btn { width: 100%; max-width: 280px; display: block; margin: 12px auto 0 auto; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; color: #000; }
+    
     .dots { flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; padding-top: 15px; padding-bottom: env(safe-area-inset-bottom); }
     .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
     .dot.active { background: var(--accent); transform: scale(1.3); }

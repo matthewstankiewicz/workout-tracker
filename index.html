@@ -6,45 +6,26 @@
   <meta name="theme-color" content="#00FF9C">
   <title>StrongTracker Pro</title>
   <style>
-    /* Theme Variables */
     :root {
-      --bg: #000000;
-      --card-bg: #111111;
-      --text: #ffffff;
-      --sub-text: #888888;
-      --border: #222222;
-      --accent: #00FF9C;
-      --input-bg: #222222;
+      --bg: #000000; --card-bg: #111111; --text: #ffffff; --sub-text: #888888;
+      --border: #222222; --accent: #00FF9C; --input-bg: #222222;
     }
-
     [data-theme="light"] {
-      --bg: #f2f2f7;
-      --card-bg: #ffffff;
-      --text: #000000;
-      --sub-text: #666666;
-      --border: #dddddd;
-      --accent: #00bd73;
-      --input-bg: #eeeeee;
+      --bg: #f2f2f7; --card-bg: #ffffff; --text: #000000; --sub-text: #666666;
+      --border: #dddddd; --accent: #00bd73; --input-bg: #eeeeee;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
     body { 
       background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; 
       margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column;
-      transition: background 0.3s ease;
     }
-    
     .top-nav {
-      flex: 0 0 auto; z-index: 2000;
-      background: var(--bg); opacity: 0.95; backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top);
+      flex: 0 0 auto; z-index: 2000; background: var(--bg); opacity: 0.95; 
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top);
     }
-
     .header-main { padding: 10px; text-align: center; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
     .menu-btn { background: none; border: none; color: var(--accent); font-size: 32px; padding: 5px 10px; cursor: pointer; }
-
     .menu-content, .settings-overlay { 
       display: none; position: fixed; right: 15px; top: 110px; 
       background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; 
@@ -52,50 +33,24 @@
     }
     .settings-overlay { left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; padding: 20px; }
     .menu-item { padding: 18px; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; text-align: center; cursor: pointer;}
-    .menu-item:last-child { border: none; }
-
     #timer-banner { 
       display: none; position: fixed; top: 0; width: 100%; background: var(--accent); 
-      color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; 
-      cursor: pointer; font-size: 16px;
+      color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; cursor: pointer;
     }
-
-    .carousel-container {
-      flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-    }
+    .carousel-container { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
     .carousel-container::-webkit-scrollbar { display: none; }
-
     .card-wrapper { min-width: 100vw; height: 100%; scroll-snap-align: center; padding: 15px; display: flex; flex-direction: column; }
-    .card { 
-      background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border);
-      flex: 1; display: flex; flex-direction: column; justify-content: space-between;
-    }
-
-    .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; margin-bottom: 2px; }
+    .card { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border); flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; }
     .val { color: var(--accent); font-weight: bold; font-size: 16px; }
-
     canvas { width: 100% !important; flex: 1; min-height: 180px; max-height: 250px; margin: 10px 0; }
-
-    .input-row { display: flex; gap: 12px; margin-top: 5px; }
-    input { 
-      flex: 1; min-width: 0; padding: 15px; background: var(--input-bg); border: 1px solid var(--border); 
-      color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none;
-    }
-    
-    .log-btn { 
-      width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; 
-      font-weight: bold; font-size: 16px; margin-top: 12px; color: #000;
-    }
-
-    .dots { 
-      flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; 
-      padding-top: 15px; background: var(--bg); padding-bottom: env(safe-area-inset-bottom);
-    }
+    .input-row { display: flex; gap: 12px; }
+    input { flex: 1; padding: 15px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
+    .log-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; margin-top: 12px; color: #000; }
+    .dots { flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; padding-top: 15px; padding-bottom: env(safe-area-inset-bottom); }
     .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
     .dot.active { background: var(--accent); transform: scale(1.3); }
-
-    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: var(--accent); font-size: 14px; letter-spacing: 2px; }
+    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: var(--accent); font-size: 14px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -122,15 +77,12 @@
 </div>
 
 <div class="settings-overlay" id="settingsPanel">
-  <h3 style="margin-top:0;">Rest Settings</h3>
-  <div class="small">Rest Time (Seconds)</div>
-  <input type="number" id="restInput" style="width:100%; margin:10px 0;" value="90">
+  <h3>Rest Settings</h3>
+  <input type="number" id="restInput" style="width:100%;" value="90">
   <button class="log-btn" onclick="saveSettings()">Save & Close</button>
 </div>
 
-<div class="carousel-container" id="app">
-    <div class="loading-state">Updating...</div>
-</div>
+<div class="carousel-container" id="app"><div class="loading-state">Updating...</div></div>
 <div class="dots" id="dots"></div>
 
 <script>
@@ -145,154 +97,91 @@
     if (!isVisible) el.style.display = "block";
   }
 
-  function handleMenuAction(actionFn) {
-    document.getElementById('navMenu').style.display = 'none';
-    actionFn();
-  }
-
-  function openSettings() {
-    document.getElementById('navMenu').style.display = 'none';
-    document.getElementById('restInput').value = restTime;
-    document.getElementById('settingsPanel').style.display = 'block';
-  }
-
-  function saveSettings() {
-    restTime = document.getElementById('restInput').value;
-    localStorage.setItem('rest_timer', restTime);
-    document.getElementById('settingsPanel').style.display = 'none';
-  }
-
-  function dismissTimer() {
-    clearInterval(timerInterval);
-    const banner = document.getElementById('timer-banner');
-    banner.style.display = 'none';
-    banner.style.background = 'var(--accent)'; 
-  }
+  function handleMenuAction(actionFn) { document.getElementById('navMenu').style.display = 'none'; actionFn(); }
+  function openSettings() { document.getElementById('navMenu').style.display = 'none'; document.getElementById('settingsPanel').style.display = 'block'; }
+  function saveSettings() { restTime = document.getElementById('restInput').value; localStorage.setItem('rest_timer', restTime); document.getElementById('settingsPanel').style.display = 'none'; }
+  function dismissTimer() { clearInterval(timerInterval); document.getElementById('timer-banner').style.display = 'none'; }
 
   function startTimer() {
     clearInterval(timerInterval);
     const banner = document.getElementById('timer-banner');
     const display = document.getElementById('timer-count');
     let timeLeft = restTime;
-    banner.style.display = 'block';
-    banner.style.background = 'var(--accent)';
+    banner.style.display = 'block'; banner.style.background = 'var(--accent)';
     display.innerText = timeLeft;
-
     timerInterval = setInterval(() => {
-      timeLeft--;
-      display.innerText = timeLeft;
+      timeLeft--; display.innerText = timeLeft;
       if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        banner.style.background = '#ff4444';
-        display.innerText = "READY!";
+        clearInterval(timerInterval); banner.style.background = '#ff4444'; display.innerText = "READY!";
         setTimeout(() => { banner.style.display = 'none'; }, 4000);
       }
     }, 1000);
   }
 
-  function calc1RM(weight, reps) {
-    if (!weight || !reps || reps < 1) return 0;
-    if (reps == 1) return weight;
-    return Math.round(weight * (1 + (reps * 0.0333)));
-  }
-
+  function calc1RM(w, r) { return (!w || !r || r < 1) ? 0 : (r == 1 ? w : Math.round(w * (1 + (r * 0.0333)))); }
   function updateLive1RM(i) {
-    const w = document.getElementById(`w-${i}`).value;
-    const r = document.getElementById(`r-${i}`).value;
-    const display = document.getElementById(`1rm-${i}`);
-    if (display) display.innerText = calc1RM(w, r) + " lbs";
+    const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
+    document.getElementById(`1rm-${i}`).innerText = calc1RM(w, r) + " lbs";
   }
 
-  function initTheme() {
-    const saved = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  
   function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    loadData(false); 
+    localStorage.setItem('theme', next); loadData(false); 
   }
 
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
-
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
-  function loadData(isManualRefresh = false) {
+  function loadData(isManual = false) {
     const app = document.getElementById("app");
     const currentIndex = Math.round(app.scrollLeft / window.innerWidth);
-    if (isManualRefresh) app.innerHTML = '<div class="loading-state">Fetching Latest...</div>';
-    
-    fetch(scriptURL, { redirect: "follow" })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("dayTitle").innerText = data.day || "Workout";
-        render(data.next || [], currentIndex);
-      });
+    if (isManual) app.innerHTML = '<div class="loading-state">Fetching Latest...</div>';
+    fetch(scriptURL, { redirect: "follow" }).then(res => res.json()).then(data => {
+      document.getElementById("dayTitle").innerText = data.day || "Workout";
+      render(data.next || [], currentIndex);
+    });
   }
 
-  function render(list, savedIndex = 0) {
+  function render(list, savedIdx = 0) {
     const app = document.getElementById("app");
-    const dotsContainer = document.getElementById("dots");
-    app.innerHTML = ""; dotsContainer.innerHTML = "";
-    
+    const dots = document.getElementById("dots");
+    app.innerHTML = ""; dots.innerHTML = "";
     let vol = 0; let done = 0;
     const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
 
     list.forEach((ex, i) => {
       if (ex.history?.length > 0 && ex.history[ex.history.length-1].d === today) vol += Number(ex.history[ex.history.length-1].v || 0);
       if (ex.setsDone >= 3) done++;
-
-      const current1RM = calc1RM(ex.weight, ex.reps);
-
       const wrapper = document.createElement("div");
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
         <div class="card">
-          <div style="text-align:center;">
-            <h3 style="margin:0; font-size:22px; line-height:1.2;">${ex.name}</h3>
-          </div>
+          <div style="text-align:center;"><h3 style="margin:0; font-size:22px;">${ex.name}</h3></div>
           <canvas id="chart-${i}"></canvas>
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; text-align:center;">
-              <div style="flex:1;">
-                <div class="small">Suggested</div>
-                <div class="val" style="font-size:18px;">${ex.weight} lbs × ${ex.reps}</div>
-                <div class="small" style="margin-top:4px; color:var(--accent); opacity:0.8;">Est. 1RM: <b id="1rm-${i}">${current1RM} lbs</b></div>
-              </div>
-              
-              <div style="flex:1; border-left:1px solid var(--border); border-right:1px solid var(--border);">
-                <div class="small">Goal</div>
-                <div class="val" style="font-size:18px;">${ex.targetReps}-${ex.repMax}</div>
-              </div>
-
-              <div style="flex:1;">
-                <div class="small">Sets Done</div>
-                <div class="val" style="font-size:18px;">${ex.setsDone} / 3</div>
-              </div>
+            <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:8px;">
+              <div style="flex:1;"><div class="small">Suggested</div><div class="val">${ex.weight}x${ex.reps}</div><div class="small" style="color:var(--accent)">1RM: <b id="1rm-${i}">${calc1RM(ex.weight, ex.reps)}</b></div></div>
+              <div style="flex:1; border-left:1px solid var(--border); border-right:1px solid var(--border);"><div class="small">Goal</div><div class="val">${ex.targetReps}-${ex.repMax}</div></div>
+              <div style="flex:1;"><div class="small">Sets Done</div><div class="val">${ex.setsDone} / 3</div></div>
             </div>
             ${ex.setsDone < 3 ? `
               <div class="input-row">
-                <input type="number" id="w-${i}" value="${ex.weight}" placeholder="Weight" oninput="updateLive1RM(${i})">
-                <input type="number" id="r-${i}" value="" placeholder="Reps" oninput="updateLive1RM(${i})">
+                <input type="number" id="w-${i}" value="${ex.weight}" oninput="updateLive1RM(${i})">
+                <input type="number" id="r-${i}" placeholder="Reps" oninput="updateLive1RM(${i})">
               </div>
               <button class="log-btn" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
-            ` : `<button class="log-btn" disabled style="background:var(--input-bg); color:var(--accent); border:1px solid var(--border);">✓ Complete</button>`}
+            ` : `<button class="log-btn" disabled style="opacity:0.5;">✓ Complete</button>`}
           </div>
         </div>`;
       app.appendChild(wrapper);
-      const d = document.createElement("div"); d.className = "dot"+(i===0?" active":""); dotsContainer.appendChild(d);
+      const d = document.createElement("div"); d.className = "dot"+(i===0?" active":""); dots.appendChild(d);
       if (ex.history?.length > 0) buildChart(`chart-${i}`, ex.history);
     });
-
     document.getElementById("totalVol").innerText = vol.toLocaleString() + " lbs";
     document.getElementById("totalDone").innerText = `${done} / ${list.length}`;
-    if (savedIndex > 0) {
-        requestAnimationFrame(() => { app.scrollTo({ left: savedIndex * window.innerWidth, behavior: 'auto' }); });
-    }
+    if (savedIdx > 0) requestAnimationFrame(() => { app.scrollTo({ left: savedIdx * window.innerWidth }); });
     app.onscroll = () => {
       const idx = Math.round(app.scrollLeft / window.innerWidth);
       document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
@@ -300,77 +189,44 @@
   }
 
   function buildChart(id, history) {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  new Chart(document.getElementById(id), {
-    type: 'line',
-    data: {
-      labels: history.map(h => h.d),
-      datasets: [{ 
-        data: history.map(h => h.v),
-        details: history.map(h => h.s),
-        borderColor: isLight ? '#00bd73' : '#00FF9C', 
-        backgroundColor: 'rgba(0, 255, 156, 0.1)', 
-        fill: true, tension: 0.4, pointRadius: 5, pointHitRadius: 40 
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, devicePixelRatio: 2,
-      layout: { padding: { top: 40 } },
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          enabled: true, 
-          backgroundColor: isLight ? '#ffffff' : '#141414',
-          titleColor: '#888888', 
-          titleFont: { size: 11 },
-          bodyColor: isLight ? '#00bd73' : '#00FF9C',
-          bodyFont: { size: 22, weight: 'bold' }, 
-          footerColor: isLight ? '#000000' : '#ffffff',
-          footerFont: { 
-            family: 'monospace', // This keeps the columns straight
-            size: 15, 
-            weight: 'bold' 
-          },
-          padding: 15, 
-          displayColors: false,
-          borderColor: isLight ? '#dddddd' : '#333333', 
-          borderWidth: 1,
-          callbacks: {
-            label: (c) => {
-              const prev = c.dataIndex > 0 ? c.dataset.data[c.dataIndex-1] : null;
-              let l = `${c.raw.toLocaleString()} lbs`;
-              return (prev && c.raw > prev) ? `★ ${l}` : l;
-            },
-            // The Header for the tooltip table
-            beforeFooter: () => {
-              return 'Weight      Reps\n-----------------';
-            },
-            footer: (ctx) => {
-              const item = ctx[0];
-              return item.dataset.details[item.dataIndex] || '';
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    new Chart(document.getElementById(id), {
+      type: 'line',
+      data: {
+        labels: history.map(h => h.d),
+        datasets: [{ 
+          data: history.map(h => h.v), details: history.map(h => h.s),
+          borderColor: isLight ? '#00bd73' : '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', fill: true, tension: 0.4, pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { 
+          legend: false,
+          tooltip: {
+            backgroundColor: isLight ? '#ffffff' : '#141414', padding: 15, borderColor: '#333', borderWidth: 1, displayColors: false,
+            titleFont: { size: 11 }, bodyFont: { size: 20, weight: 'bold' }, footerFont: { family: 'monospace', size: 14, weight: 'bold' },
+            callbacks: {
+              label: (c) => c.raw.toLocaleString() + " lbs",
+              beforeFooter: () => 'Weight   Reps\n-------------',
+              footer: (ctx) => ctx[0].dataset.details[ctx[0].dataIndex]
             }
           }
-        }
-      },
-      scales: { x: { display: false }, y: { display: false, grace: '30%' } }
-    }
-  });
-}
+        },
+        scales: { x: { display: false }, y: { display: false, grace: '30%' } }
+      }
+    });
+  }
 
   function logSet(name, i, btn) {
     const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
-    if(!r) { alert("Please enter reps"); return; }
-    btn.disabled = true; btn.innerText = "Saving...";
-    startTimer();
+    if(!r) return alert("Enter reps");
+    btn.disabled = true; startTimer();
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
   }
 
-  function finishWorkout() {
-    if(!confirm("Switch Workout Day?")) return;
-    fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload());
-  }
-
-  initTheme();
+  function finishWorkout() { if(confirm("Finish?")) fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload()); }
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
   loadData();
 </script>
 </body>

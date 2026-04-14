@@ -300,46 +300,56 @@
   }
 
   function buildChart(id, history) {
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    new Chart(document.getElementById(id), {
-      type: 'line',
-      data: {
-        labels: history.map(h => h.d),
-        datasets: [{ 
-          data: history.map(h => h.v),
-          details: history.map(h => h.s),
-          borderColor: isLight ? '#00bd73' : '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', 
-          fill: true, tension: 0.4, pointRadius: 5, pointHitRadius: 40 
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, devicePixelRatio: 2,
-        layout: { padding: { top: 40 } },
-        plugins: { 
-          legend: { display: false },
-          tooltip: {
-            enabled: true, backgroundColor: isLight ? '#ffffff' : '#141414',
-            titleColor: isLight ? '#000000' : '#ffffff', bodyColor: isLight ? '#00bd73' : '#00FF9C',
-            bodyFont: { size: 24, weight: 'bold' }, padding: 14, displayColors: false,
-            borderColor: isLight ? '#dddddd' : '#333333', borderWidth: 1,
-            callbacks: {
-              label: (c) => {
-                const prev = c.dataIndex > 0 ? c.dataset.data[c.dataIndex-1] : null;
-                let l = `${c.raw.toLocaleString()} lbs`;
-                return (prev && c.raw > prev) ? `★ ${l}` : l;
-              },
-              afterBody: (ctx) => {
-                const item = ctx[0];
-                const sets = item.dataset.details[item.dataIndex];
-                return sets ? `\nSets: ${sets}` : '';
-              }
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels: history.map(h => h.d),
+      datasets: [{ 
+        data: history.map(h => h.v),
+        details: history.map(h => h.s),
+        borderColor: isLight ? '#00bd73' : '#00FF9C', 
+        backgroundColor: 'rgba(0, 255, 156, 0.1)', 
+        fill: true, tension: 0.4, pointRadius: 5, pointHitRadius: 40 
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, devicePixelRatio: 2,
+      layout: { padding: { top: 40 } },
+      plugins: { 
+        legend: { display: false },
+        tooltip: {
+          enabled: true, 
+          backgroundColor: isLight ? '#ffffff' : '#141414',
+          titleColor: isLight ? '#888888' : '#888888', 
+          titleFont: { size: 10 },
+          bodyColor: isLight ? '#00bd73' : '#00FF9C',
+          bodyFont: { size: 20, weight: 'bold' }, // Main Volume Font
+          footerColor: isLight ? '#444444' : '#aaaaaa',
+          footerFont: { size: 13, weight: 'normal' }, // Set List Font Size
+          padding: 12, 
+          displayColors: false,
+          borderColor: isLight ? '#dddddd' : '#333333', 
+          borderWidth: 1,
+          callbacks: {
+            label: (c) => {
+              const prev = c.dataIndex > 0 ? c.dataset.data[c.dataIndex-1] : null;
+              let l = `${c.raw.toLocaleString()} lbs`;
+              return (prev && c.raw > prev) ? `★ ${l}` : l;
+            },
+            // We use footer instead of afterBody for better vertical spacing control
+            footer: (ctx) => {
+              const item = ctx[0];
+              const sets = item.dataset.details[item.dataIndex];
+              return sets ? `\n${sets}` : '';
             }
           }
-        },
-        scales: { x: { display: false }, y: { display: false, grace: '30%' } }
-      }
-    });
-  }
+        }
+      },
+      scales: { x: { display: false }, y: { display: false, grace: '30%' } }
+    }
+  });
+}
 
   function logSet(name, i, btn) {
     const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;

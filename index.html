@@ -321,13 +321,17 @@
         tooltip: {
           enabled: true, 
           backgroundColor: isLight ? '#ffffff' : '#141414',
-          titleColor: isLight ? '#888888' : '#888888', 
-          titleFont: { size: 10 },
+          titleColor: '#888888', 
+          titleFont: { size: 11 },
           bodyColor: isLight ? '#00bd73' : '#00FF9C',
-          bodyFont: { size: 20, weight: 'bold' }, // Main Volume Font
-          footerColor: isLight ? '#444444' : '#aaaaaa',
-          footerFont: { size: 13, weight: 'normal' }, // Set List Font Size
-          padding: 12, 
+          bodyFont: { size: 22, weight: 'bold' }, 
+          footerColor: isLight ? '#000000' : '#ffffff',
+          footerFont: { 
+            family: 'monospace', // This keeps the columns straight
+            size: 15, 
+            weight: 'bold' 
+          },
+          padding: 15, 
           displayColors: false,
           borderColor: isLight ? '#dddddd' : '#333333', 
           borderWidth: 1,
@@ -337,11 +341,13 @@
               let l = `${c.raw.toLocaleString()} lbs`;
               return (prev && c.raw > prev) ? `★ ${l}` : l;
             },
-            // We use footer instead of afterBody for better vertical spacing control
+            // The Header for the tooltip table
+            beforeFooter: () => {
+              return 'Weight      Reps\n-----------------';
+            },
             footer: (ctx) => {
               const item = ctx[0];
-              const sets = item.dataset.details[item.dataIndex];
-              return sets ? `\n${sets}` : '';
+              return item.dataset.details[item.dataIndex] || '';
             }
           }
         }

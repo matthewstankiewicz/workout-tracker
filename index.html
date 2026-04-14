@@ -19,14 +19,24 @@
       background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; 
       margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column;
     }
-    .top-nav { flex: 0 0 auto; z-index: 2000; background: var(--bg); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
+    .top-nav {
+      flex: 0 0 auto; z-index: 2000; background: var(--bg); opacity: 0.95; 
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top);
+    }
     .header-main { padding: 10px; text-align: center; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
     .menu-btn { background: none; border: none; color: var(--accent); font-size: 32px; padding: 5px 10px; cursor: pointer; }
-    .menu-content, .settings-overlay { display: none; position: fixed; right: 15px; top: 110px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .menu-content, .settings-overlay { 
+      display: none; position: fixed; right: 15px; top: 110px; 
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; 
+      z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+    }
     .settings-overlay { left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; padding: 20px; }
     .menu-item { padding: 18px; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; text-align: center; cursor: pointer;}
-    #timer-banner { display: none; position: fixed; top: 0; width: 100%; background: var(--accent); color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; cursor: pointer; }
+    #timer-banner { 
+      display: none; position: fixed; top: 0; width: 100%; background: var(--accent); 
+      color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; cursor: pointer;
+    }
     .carousel-container { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
     .carousel-container::-webkit-scrollbar { display: none; }
     .card-wrapper { min-width: 100vw; height: 100%; scroll-snap-align: center; padding: 15px; display: flex; flex-direction: column; }
@@ -34,12 +44,9 @@
     .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; }
     .val { color: var(--accent); font-weight: bold; font-size: 16px; }
     canvas { width: 100% !important; flex: 1; min-height: 180px; max-height: 250px; margin: 10px 0; }
-    
-    /* INPUT ROW FIX */
-    .input-row { display: flex; gap: 12px; justify-content: center; max-width: 280px; margin: 0 auto; }
-    input { flex: 1; width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
-    .log-btn { width: 100%; max-width: 280px; display: block; margin: 12px auto 0 auto; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; color: #000; }
-    
+    .input-row { display: flex; gap: 12px; }
+    input { flex: 1; padding: 15px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
+    .log-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; margin-top: 12px; color: #000; }
     .dots { flex: 0 0 70px; display: flex; justify-content: center; gap: 8px; padding-top: 15px; padding-bottom: env(safe-area-inset-bottom); }
     .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
     .dot.active { background: var(--accent); transform: scale(1.3); }
@@ -64,15 +71,15 @@
 
 <div class="menu-content" id="navMenu">
   <div class="menu-item" onclick="openSettings()">⚙️ Settings</div>
-  <div class="menu-item" onclick="handleMenuAction(toggleTheme)">🌓 Theme</div>
-  <div class="menu-item" onclick="handleMenuAction(finishWorkout)">🏁 Switch Day</div>
-  <div class="menu-item" onclick="handleMenuAction(() => loadData(true))">🔄 Refresh</div>
+  <div class="menu-item" onclick="handleMenuAction(toggleTheme)">🌓 Light/Dark</div>
+  <div class="menu-item" onclick="handleMenuAction(finishWorkout)">🏁 Finish & Switch</div>
+  <div class="menu-item" onclick="handleMenuAction(() => loadData(true))">🔄 Refresh Data</div>
 </div>
 
 <div class="settings-overlay" id="settingsPanel">
-  <h3>Rest Timer</h3>
+  <h3>Rest Settings</h3>
   <input type="number" id="restInput" style="width:100%;" value="90">
-  <button class="log-btn" onclick="saveSettings()">Save</button>
+  <button class="log-btn" onclick="saveSettings()">Save & Close</button>
 </div>
 
 <div class="carousel-container" id="app"><div class="loading-state">Updating...</div></div>
@@ -123,14 +130,14 @@
     localStorage.setItem('theme', next); loadData(false); 
   }
 
-  let userKey = localStorage.getItem("workout_key") || prompt("Key:");
+  let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
   const scriptURL = `https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec?key=${userKey}`;
 
   function loadData(isManual = false) {
     const app = document.getElementById("app");
     const currentIndex = Math.round(app.scrollLeft / window.innerWidth);
-    if (isManual) app.innerHTML = '<div class="loading-state">Syncing...</div>';
+    if (isManual) app.innerHTML = '<div class="loading-state">Fetching Latest...</div>';
     fetch(scriptURL, { redirect: "follow" }).then(res => res.json()).then(data => {
       document.getElementById("dayTitle").innerText = data.day || "Workout";
       render(data.next || [], currentIndex);
@@ -138,9 +145,10 @@
   }
 
   function render(list, savedIdx = 0) {
-    const app = document.getElementById("app"), dots = document.getElementById("dots");
+    const app = document.getElementById("app");
+    const dots = document.getElementById("dots");
     app.innerHTML = ""; dots.innerHTML = "";
-    let vol = 0, done = 0;
+    let vol = 0; let done = 0;
     const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
 
     list.forEach((ex, i) => {
@@ -150,10 +158,10 @@
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
         <div class="card">
-          <div style="text-align:center;"><h3 style="margin:0; font-size:20px;">${ex.name}</h3></div>
+          <div style="text-align:center;"><h3 style="margin:0; font-size:22px;">${ex.name}</h3></div>
           <canvas id="chart-${i}"></canvas>
           <div>
-            <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:8px;">
               <div style="flex:1;"><div class="small">Suggested</div><div class="val">${ex.weight}x${ex.reps}</div><div class="small" style="color:var(--accent)">1RM: <b id="1rm-${i}">${calc1RM(ex.weight, ex.reps)}</b></div></div>
               <div style="flex:1; border-left:1px solid var(--border); border-right:1px solid var(--border);"><div class="small">Goal</div><div class="val">${ex.targetReps}-${ex.repMax}</div></div>
               <div style="flex:1;"><div class="small">Sets Done</div><div class="val">${ex.setsDone} / 3</div></div>
@@ -164,7 +172,7 @@
                 <input type="number" id="r-${i}" placeholder="Reps" oninput="updateLive1RM(${i})">
               </div>
               <button class="log-btn" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i}, this)">Log Set</button>
-            ` : `<button class="log-btn" disabled style="opacity:0.4;">✓ Done</button>`}
+            ` : `<button class="log-btn" disabled style="opacity:0.5;">✓ Complete</button>`}
           </div>
         </div>`;
       app.appendChild(wrapper);
@@ -188,7 +196,7 @@
         labels: history.map(h => h.d),
         datasets: [{ 
           data: history.map(h => h.v), details: history.map(h => h.s),
-          borderColor: isLight ? '#00bd73' : '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', fill: true, tension: 0.4, pointRadius: 4
+          borderColor: isLight ? '#00bd73' : '#00FF9C', backgroundColor: 'rgba(0, 255, 156, 0.1)', fill: true, tension: 0.4, pointRadius: 5
         }]
       },
       options: {
@@ -196,23 +204,24 @@
         plugins: { 
           legend: false,
           tooltip: {
-            backgroundColor: isLight ? '#ffffff' : '#141414', padding: 12, borderColor: '#333', borderWidth: 1, displayColors: false,
-            titleFont: { size: 10 }, bodyFont: { size: 18, weight: 'bold' }, footerFont: { family: 'monospace', size: 14, weight: 'bold' },
+            backgroundColor: isLight ? '#ffffff' : '#141414', padding: 15, borderColor: '#333', borderWidth: 1, displayColors: false,
+            titleFont: { size: 11 }, bodyFont: { size: 20, weight: 'bold' }, footerFont: { family: 'monospace', size: 14, weight: 'bold' },
             callbacks: {
               label: (c) => c.raw.toLocaleString() + " lbs",
-              beforeFooter: () => ' Weight   Reps \n---------------',
+              beforeFooter: () => 'Weight   Reps\n-------------',
               footer: (ctx) => ctx[0].dataset.details[ctx[0].dataIndex]
             }
           }
         },
-        scales: { x: { display: false }, y: { display: false, grace: '25%' } }
+        scales: { x: { display: false }, y: { display: false, grace: '30%' } }
       }
     });
   }
 
   function logSet(name, i, btn) {
     const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
-    if(!r) return; btn.disabled = true; btn.innerText = "..."; startTimer();
+    if(!r) return alert("Enter reps");
+    btn.disabled = true; startTimer();
     fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
   }
 

@@ -22,6 +22,9 @@
     .summary-bar { padding: 5px 15px 10px; display: flex; justify-content: space-between; align-items: center; }
     .menu-btn { background: none; border: none; color: var(--accent); font-size: 32px; padding: 5px 10px; cursor: pointer; }
     
+    #timer-banner { display: none; position: fixed; top: 0; width: 100%; background: var(--accent); color: #000; text-align: center; padding: 15px; z-index: 10000; font-weight: bold; font-size: 18px; cursor: pointer; }
+    .small-hint { font-size: 10px; display: block; opacity: 0.7; font-weight: normal; }
+
     .menu-content, .settings-overlay { display: none; position: fixed; right: 15px; top: 110px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .settings-overlay { left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; padding: 20px; }
     .menu-item { padding: 18px; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; text-align: center; cursor: pointer;}
@@ -32,8 +35,6 @@
     .card { background: var(--card-bg); padding: 15px; border-radius: 20px; border: 1px solid var(--border); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     
     .chart-box { flex: 1; min-height: 100px; max-height: 160px; position: relative; margin: 5px 0; }
-    canvas { width: 100% !important; height: 100% !important; }
-
     .prev-session { text-align: center; margin-bottom: 10px; padding: 6px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px dashed var(--border); }
     .prev-data { font-size: 14px; color: var(--text); margin-top: 2px; }
     
@@ -41,7 +42,6 @@
     input { flex: 1; width: 1%; min-width: 0; padding: 12px 0; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
     .log-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; color: #000; }
     
-    #timer-banner { display: none; position: fixed; top: 0; width: 100%; background: var(--accent); color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; font-size: 18px; }
     .dots { flex: 0 0 40px; display: flex; justify-content: center; gap: 8px; padding-top: 10px; padding-bottom: env(safe-area-inset-bottom); }
     .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
     .dot.active { background: var(--accent); transform: scale(1.3); }
@@ -55,7 +55,10 @@
 </head>
 <body>
 
-<div id="timer-banner">REST: <span id="timer-count">0</span>s</div>
+<div id="timer-banner" onclick="stopTimer()">
+  REST: <span id="timer-count">0</span>s
+  <span class="small-hint">TAP TO SKIP</span>
+</div>
 
 <div class="top-nav">
   <div class="header-main" id="dayTitle">Syncing...</div>
@@ -88,7 +91,7 @@
 <div id="statsOverlay" class="stats-overlay">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <h2 style="margin:0">Performance</h2>
-    <span style="color:var(--accent); font-weight:bold;" onclick="document.getElementById('statsOverlay').style.display='none'">CLOSE [X]</span>
+    <span style="color:var(--accent); font-weight:bold; cursor:pointer;" onclick="document.getElementById('statsOverlay').style.display='none'">CLOSE [X]</span>
   </div>
   <div id="statsContent"></div>
 </div>
@@ -99,6 +102,8 @@
 <script>
   const scriptURL = 'https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec'; 
   let globalTotals = [];
+  let timerInterval;
+
   let userKey = localStorage.getItem("workout_key") || prompt("Enter Secret Key:");
   if (userKey) localStorage.setItem("workout_key", userKey);
 
@@ -124,21 +129,28 @@
   }
 
   function startTimer() {
+    stopTimer(); // Clear existing if running
     const banner = document.getElementById("timer-banner");
     const countEl = document.getElementById("timer-count");
     let timeLeft = restTime;
     banner.style.display = "block";
+    banner.style.backgroundColor = "var(--accent)";
     countEl.innerText = timeLeft;
     
-    const interval = setInterval(() => {
+    timerInterval = setInterval(() => {
       timeLeft--;
       countEl.innerText = timeLeft;
       if (timeLeft <= 0) {
-        clearInterval(interval);
+        clearInterval(timerInterval);
         banner.style.backgroundColor = "#ff4444";
-        setTimeout(() => { banner.style.display = "none"; banner.style.backgroundColor = "var(--accent)"; }, 3000);
+        setTimeout(() => { banner.style.display = "none"; }, 3000);
       }
     }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    document.getElementById("timer-banner").style.display = "none";
   }
 
   function loadData() {
@@ -148,6 +160,10 @@
         globalTotals = data.totals || [];
         document.getElementById("dayTitle").innerText = data.day || "Workout";
         render(data.next || []);
+      })
+      .catch(err => {
+        document.getElementById("dayTitle").innerText = "Connection Failed";
+        console.error(err);
       });
   }
 
@@ -162,12 +178,9 @@
 
     list.forEach((ex, i) => {
       const hist = ex.history || [];
-      
-      // FIX: Find the last entry that ISN'T today for the "Last Session" box
       const realHistory = hist.filter(h => h.d !== todayLabel);
       const prev = realHistory.length > 0 ? realHistory[realHistory.length - 1] : { d: "N/A", s: "No data" };
       
-      // Calculate today's current volume
       const currentEntry = hist.find(h => h.d === todayLabel);
       if (currentEntry) totalSessionVol += currentEntry.v;
       if (ex.setsDone >= 3) completedSets++;

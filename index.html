@@ -16,12 +16,13 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-    .top-nav { flex: 0 0 auto; z-index: 2000; background: var(--bg); opacity: 0.95; backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
+    
+    .top-nav { flex: 0 0 auto; z-index: 2000; background: var(--bg); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
     .header-main { padding: 10px; text-align: center; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .summary-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
     .menu-btn { background: none; border: none; color: var(--accent); font-size: 32px; padding: 5px 10px; cursor: pointer; }
-    .menu-content, .settings-overlay { display: none; position: fixed; right: 15px; top: 110px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-    .settings-overlay { left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; padding: 20px; }
+    
+    .menu-content { display: none; position: fixed; right: 15px; top: 110px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 9999; width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .menu-item { padding: 18px; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; text-align: center; cursor: pointer;}
     
     .stats-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; padding: 20px; overflow-y: auto; }
@@ -32,26 +33,24 @@
     .carousel-container::-webkit-scrollbar { display: none; }
     .card-wrapper { min-width: 100vw; height: 100%; scroll-snap-align: center; padding: 15px; display: flex; flex-direction: column; }
     .card { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border); flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    
     .prev-session { text-align: center; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 10px; }
     .prev-data { font-size: 14px; color: var(--text); margin-top: 4px; }
     
-    .input-row { display: flex; gap: 10px; width: 100%; max-width: 100%; margin: 0 auto; justify-content: space-between; }
-    input { flex: 1; width: 1%; min-width: 0; padding: 15px 0; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; -webkit-appearance: none; }
+    .input-row { display: flex; gap: 10px; width: 100%; margin: 0 auto; }
+    input { flex: 1; width: 1%; min-width: 0; padding: 15px 0; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 12px; font-size: 20px; text-align: center; outline: none; }
     .log-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; color: #000; }
     
-    canvas { width: 100% !important; flex: 1; min-height: 150px; max-height: 200px; }
     .dots { flex: 0 0 60px; display: flex; justify-content: center; gap: 8px; padding-top: 10px; padding-bottom: env(safe-area-inset-bottom); }
     .dot { width: 6px; height: 6px; background: var(--border); border-radius: 50%; }
     .dot.active { background: var(--accent); transform: scale(1.3); }
+    .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; width: 100vw; color: var(--accent); font-size: 14px; text-align: center; padding: 20px; }
     .small { font-size: 10px; color: var(--sub-text); text-transform: uppercase; }
     .val { color: var(--accent); font-weight: bold; font-size: 16px; }
-    #timer-banner { display: none; position: fixed; top: 0; width: 100%; background: var(--accent); color: #000; text-align: center; padding: 12px; z-index: 10000; font-weight: bold; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
-<div id="timer-banner" onclick="this.style.display='none'">REST: <span id="timer-count">0</span>s</div>
 
 <div class="top-nav">
   <div class="header-main" id="dayTitle">Syncing...</div>
@@ -59,7 +58,7 @@
     <div><div class="small">Session Volume</div><div id="totalVol" class="val">0 lbs</div></div>
     <div style="display:flex; align-items:center; gap:12px;">
       <div style="text-align:right;"><div class="small">Progress</div><div id="totalDone" class="val">0 / 0</div></div>
-      <button class="menu-btn" onclick="toggleMenu('navMenu')">☰</button>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
     </div>
   </div>
 </div>
@@ -68,98 +67,219 @@
   <div class="menu-item" onclick="handleMenuAction(showStats)">📊 View Stats</div>
   <div class="menu-item" onclick="handleMenuAction(toggleTheme)">🌓 Light/Dark</div>
   <div class="menu-item" onclick="handleMenuAction(finishWorkout)">🏁 Finish & Switch</div>
+  <div class="menu-item" onclick="handleMenuAction(resetKey)">🔑 Change Key</div>
+  <div class="menu-item" onclick="handleMenuAction(() => loadData(true))">🔄 Force Refresh</div>
 </div>
 
 <div id="statsOverlay" class="stats-overlay">
   <span class="close-stats" onclick="document.getElementById('statsOverlay').style.display='none'">CLOSE [X]</span>
-  <div class="stats-card"><h3>Pull Volume</h3><canvas id="chartPull"></canvas></div>
-  <div class="stats-card"><h3>Push Volume</h3><canvas id="chartPush"></canvas></div>
-  <div class="stats-card"><h3>Legs Volume</h3><canvas id="chartLegs"></canvas></div>
+  <div id="statsContent"></div>
 </div>
 
-<div class="carousel-container" id="app"></div>
+<div class="carousel-container" id="app">
+  <div class="loading-state">Initial Load...</div>
+</div>
 <div class="dots" id="dots"></div>
 
 <script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbzGH5Ggeq-Z29hYC3R98GnEJAdEGUrzmTszgX2TuG8ZMGFdgrjtu5Yy028CUPjnaGJobw/exec'; 
   let globalTotals = [];
-  const scriptURL = `YOUR_APPS_SCRIPT_URL_HERE?key=8675309`; // Update this
 
-  function toggleMenu(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === "block" ? "none" : "block";
+  // Restore Key Management Logic
+  let userKey = localStorage.getItem("workout_key");
+  if (!userKey) {
+    userKey = prompt("Enter Secret Key:");
+    if (userKey) localStorage.setItem("workout_key", userKey);
   }
 
-  function handleMenuAction(fn) { document.getElementById('navMenu').style.display = 'none'; fn(); }
-
-  function showStats() {
-    document.getElementById('statsOverlay').style.display = 'block';
-    renderGlobalChart("Pull", "chartPull", "#00FF9C");
-    renderGlobalChart("Push", "chartPush", "#00bd73");
-    renderGlobalChart("Legs", "chartLegs", "#3498db");
+  function resetKey() {
+    const newKey = prompt("Enter New Secret Key:");
+    if (newKey) {
+      localStorage.setItem("workout_key", newKey);
+      location.reload();
+    }
   }
 
-  function renderGlobalChart(label, canvasId, color) {
-    const dataPoints = globalTotals.filter(d => d[label] > 0);
-    new Chart(document.getElementById(canvasId), {
-      type: 'bar',
-      data: { labels: dataPoints.map(d => d.date), datasets: [{ data: dataPoints.map(d => d[label]), backgroundColor: color, borderRadius: 5 }] },
-      options: { plugins: { legend: false } }
-    });
+  function toggleMenu() {
+    const el = document.getElementById('navMenu');
+    el.style.display = (el.style.display === "block") ? "none" : "block";
   }
 
-  function loadData() {
-    fetch(scriptURL).then(res => res.json()).then(data => {
-      globalTotals = data.totals;
-      document.getElementById("dayTitle").innerText = data.day;
-      render(data.next);
-    });
+  function handleMenuAction(fn) {
+    document.getElementById('navMenu').style.display = 'none';
+    fn();
+  }
+
+  function loadData(isManual = false) {
+    const app = document.getElementById("app");
+    if (!userKey) {
+      app.innerHTML = '<div class="loading-state">No key provided. Refresh to try again.</div>';
+      return;
+    }
+    if (isManual) app.innerHTML = '<div class="loading-state">Refreshing...</div>';
+    
+    const fullUrl = `${scriptURL}?key=${userKey}&cb=${Date.now()}`;
+    
+    fetch(fullUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        globalTotals = data.totals || [];
+        document.getElementById("dayTitle").innerText = data.day || "Workout";
+        render(data.next || []);
+      })
+      .catch(err => {
+        app.innerHTML = `<div class="loading-state" style="color:#ff4444">
+          <b>Connection Error</b><br>${err.message}<br><br>
+          If this is a key error, use "Change Key" in the menu.
+        </div>`;
+      });
   }
 
   function render(list) {
-    const app = document.getElementById("app"); app.innerHTML = "";
-    const dots = document.getElementById("dots"); dots.innerHTML = "";
+    const app = document.getElementById("app");
+    const dots = document.getElementById("dots");
+    app.innerHTML = ""; dots.innerHTML = "";
+    
+    if (!list || list.length === 0) {
+      app.innerHTML = '<div class="loading-state">No exercises found.</div>';
+      return;
+    }
+
+    let totalSessionVol = 0;
+    let completedSets = 0;
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+
     list.forEach((ex, i) => {
       const hist = ex.history || [];
       const prev = hist.length > 0 ? hist[hist.length-1] : { d: "N/A", s: "" };
+      
+      if (prev.d === todayLabel) totalSessionVol += prev.v;
+      if (ex.setsDone >= 3) completedSets++;
+
       const wrapper = document.createElement("div");
       wrapper.className = "card-wrapper";
       wrapper.innerHTML = `
         <div class="card">
-          <h3 style="text-align:center">${ex.name}</h3>
+          <h3 style="text-align:center; margin:0; font-size: 24px;">${ex.name}</h3>
           <canvas id="ex-chart-${i}"></canvas>
           <div class="prev-session">
             <div class="small">Last Session (${prev.d})</div>
             <div class="prev-data">${prev.s ? prev.s.split('\n').reverse().join(' | ') : 'No history'}</div>
           </div>
           <div>
-            <div class="input-row">
-              <input type="number" id="w-${i}" value="${ex.weight}">
-              <input type="number" id="r-${i}" placeholder="Reps">
+            <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:12px;">
+               <div style="flex:1;"><div class="small">Goal</div><div class="val">${ex.targetReps}-${ex.repMax}</div></div>
+               <div style="flex:1; border-left:1px solid var(--border);"><div class="small">Sets Done</div><div class="val">${ex.setsDone} / 3</div></div>
             </div>
-            <button class="log-btn" onclick="logSet('${ex.name}', ${i}, this)">Log Set</button>
+            <div class="input-row">
+              <input type="number" id="w-${i}" value="${ex.weight}" pattern="\\d*">
+              <input type="number" id="r-${i}" placeholder="Reps" pattern="\\d*">
+            </div>
+            <button class="log-btn" id="btn-${i}" onclick="logSet('${ex.name.replace(/'/g, "\\'")}', ${i})">Log Set</button>
           </div>
         </div>`;
       app.appendChild(wrapper);
-      const dot = document.createElement("div"); dot.className = "dot"+(i===0?" active":""); dots.appendChild(dot);
-      if (hist.length) buildExChart(`ex-chart-${i}`, hist);
+      
+      const dot = document.createElement("div");
+      dot.className = "dot" + (i === 0 ? " active" : "");
+      dots.appendChild(dot);
+      
+      if (hist.length > 0) {
+        setTimeout(() => buildExChart(`ex-chart-${i}`, hist), 50);
+      }
     });
+
+    document.getElementById("totalVol").innerText = totalSessionVol.toLocaleString() + " lbs";
+    document.getElementById("totalDone").innerText = `${completedSets} / ${list.length}`;
+
+    app.onscroll = () => {
+      const idx = Math.round(app.scrollLeft / window.innerWidth);
+      document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    };
   }
 
   function buildExChart(id, history) {
-    new Chart(document.getElementById(id), {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    new Chart(canvas, {
       type: 'line',
-      data: { labels: history.map(h => h.d), datasets: [{ data: history.map(h => h.v), borderColor: '#00FF9C', fill: true, tension: 0.4 }] },
-      options: { plugins: { legend: false }, scales: { x: { display: false }, y: { display: false } } }
+      data: {
+        labels: history.map(h => h.d),
+        datasets: [{ 
+          data: history.map(h => h.v), 
+          borderColor: '#00FF9C', 
+          backgroundColor: 'rgba(0,255,156,0.1)', 
+          fill: true, 
+          tension: 0.4 
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: { legend: false }, 
+        scales: { x: { display: false }, y: { display: false } } 
+      }
     });
   }
 
-  function logSet(name, i, btn) {
-    const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
-    fetch(scriptURL, { method: "POST", body: JSON.stringify({ exercise: name, weight: w, reps: r }) }).then(() => loadData());
+  function showStats() {
+    document.getElementById('statsOverlay').style.display = 'block';
+    const container = document.getElementById('statsContent');
+    container.innerHTML = `
+      <div class="stats-card"><h3>Pull Volume</h3><canvas id="chartPull"></canvas></div>
+      <div class="stats-card"><h3>Push Volume</h3><canvas id="chartPush"></canvas></div>
+      <div class="stats-card"><h3>Legs Volume</h3><canvas id="chartLegs"></canvas></div>
+    `;
+    setTimeout(() => {
+      renderGlobalChart("Pull", "chartPull", "#00FF9C");
+      renderGlobalChart("Push", "chartPush", "#00bd73");
+      renderGlobalChart("Legs", "chartLegs", "#3498db");
+    }, 100);
   }
 
-  function finishWorkout() { fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) }).then(() => location.reload()); }
-  function toggleTheme() { document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+  function renderGlobalChart(label, canvasId, color) {
+    const dataPoints = globalTotals.filter(d => d[label] > 0);
+    const canvas = document.getElementById(canvasId);
+    if (dataPoints.length === 0 || !canvas) return;
+    new Chart(canvas, {
+      type: 'bar',
+      data: { labels: dataPoints.map(d => d.date), datasets: [{ data: dataPoints.map(d => d[label]), backgroundColor: color, borderRadius: 5 }] },
+      options: { plugins: { legend: false } }
+    });
+  }
+
+  function logSet(name, i) {
+    const w = document.getElementById(`w-${i}`).value;
+    const r = document.getElementById(`r-${i}`).value;
+    const btn = document.getElementById(`btn-${i}`);
+    if (!r) return alert("Please enter reps");
+    btn.disabled = true; btn.innerText = "Saving...";
+    
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({ exercise: name, weight: w, reps: r })
+    })
+    .then(() => loadData())
+    .catch(err => {
+      alert("Error saving: " + err);
+      btn.disabled = false; btn.innerText = "Log Set";
+    });
+  }
+
+  function finishWorkout() {
+    if (confirm("Switch to the next workout day?")) {
+      fetch(scriptURL, { method: "POST", body: JSON.stringify({ action: "finishWorkout" }) })
+        .then(() => location.reload());
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
+
+  document.documentElement.setAttribute('data-theme', 'dark');
   loadData();
 </script>
 </body>
